@@ -366,34 +366,76 @@
                     rows[rowNum].push(ticket);
                 });
                 
-                // If no rows (standing area), display as grid
+                // Check if venue is standing layout (no row numbers)
+                const isStandingLayout = selectedEvent && selectedEvent.venue && selectedEvent.venue.layoutType === 'standing';
+                
+                // If no rows (standing area), display as vertically stacked category buttons or grid
                 if (Object.keys(rows).length === 1 && rows[0]) {
-                    const row = document.createElement('div');
-                    row.className = 'seat-row';
-                    row.style.flexWrap = 'wrap';
-                    row.style.justifyContent = 'center';
-                    
-                    tickets.slice(0, 50).forEach(ticket => { // Limit to 50 for display
-                        const seat = document.createElement('button');
-                        seat.className = 'seat';
-                        seat.textContent = ticket.seatNumber;
-                        seat.addEventListener('click', () => selectSeat(ticket, seat));
-                        row.appendChild(seat);
+                    // Group tickets by category name
+                    const categories = {};
+                    tickets.forEach(ticket => {
+                        const catName = ticket.categoryName || 'Без категории';
+                        if (!categories[catName]) categories[catName] = [];
+                        categories[catName].push(ticket);
                     });
                     
-                    if (tickets.length > 50) {
-                        const more = document.createElement('p');
-                        more.style.color = '#808080';
-                        more.style.marginTop = '1rem';
-                        more.textContent = `+ ещё ${tickets.length - 50} мест`;
-                        seatsGrid.appendChild(row);
-                        seatsGrid.appendChild(more);
+                    // If viewing all categories and we have multiple, show as stacked buttons
+                    const categoryNames = Object.keys(categories);
+                    if (categoryNames.length > 1) {
+                        const container = document.createElement('div');
+                        container.style.display = 'flex';
+                        container.style.flexDirection = 'column';
+                        container.style.gap = '1rem';
+                        container.style.alignItems = 'center';
+                        
+                        categoryNames.forEach(catName => {
+                            const catTickets = categories[catName];
+                            const catBtn = document.createElement('button');
+                            catBtn.className = 'category-btn';
+                            catBtn.style.width = '200px';
+                            catBtn.textContent = `${catName} (${catTickets.length} мест)`;
+                            catBtn.addEventListener('click', () => {
+                                // Select first available ticket from this category
+                                const ticket = catTickets[0];
+                                if (ticket) {
+                                    selectedTicket = ticket;
+                                    displayConfirmation();
+                                    showStep(3);
+                                }
+                            });
+                            container.appendChild(catBtn);
+                        });
+                        
+                        seatsGrid.appendChild(container);
                     } else {
-                        seatsGrid.appendChild(row);
+                        // Single category - display as grid
+                        const row = document.createElement('div');
+                        row.className = 'seat-row';
+                        row.style.flexWrap = 'wrap';
+                        row.style.justifyContent = 'center';
+                        
+                        tickets.slice(0, 50).forEach(ticket => { // Limit to 50 for display
+                            const seat = document.createElement('button');
+                            seat.className = 'seat';
+                            seat.textContent = ticket.seatNumber;
+                            seat.addEventListener('click', () => selectSeat(ticket, seat));
+                            row.appendChild(seat);
+                        });
+                        
+                        if (tickets.length > 50) {
+                            const more = document.createElement('p');
+                            more.style.color = '#808080';
+                            more.style.marginTop = '1rem';
+                            more.textContent = `+ ещё ${tickets.length - 50} мест`;
+                            seatsGrid.appendChild(row);
+                            seatsGrid.appendChild(more);
+                        } else {
+                            seatsGrid.appendChild(row);
+                        }
                     }
                 } else {
                     // Display rows with seats
-                    Object.keys(rows).sort((a, b) => a - b).slice(0, 10).forEach(rowNum => {
+                    Object.keys(rows).sort((a, b) => parseInt(a) - parseInt(b)).forEach(rowNum => {
                         const row = document.createElement('div');
                         row.className = 'seat-row';
                         
@@ -402,7 +444,7 @@
                         label.textContent = `Ряд ${rowNum}`;
                         row.appendChild(label);
                         
-                        rows[rowNum].sort((a, b) => a.seatNumber - b.seatNumber).slice(0, 20).forEach(ticket => {
+                        rows[rowNum].sort((a, b) => a.seatNumber - b.seatNumber).forEach(ticket => {
                             const seat = document.createElement('button');
                             seat.className = 'seat';
                             seat.textContent = ticket.seatNumber;

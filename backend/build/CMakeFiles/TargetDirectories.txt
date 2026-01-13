@@ -1,3 +1,0 @@
-/home/neverov/Рабочий стол/cw-copilot-develop-secure-ticket-booking(1)/cw-copilot-develop-secure-ticket-booking/backend/build/CMakeFiles/server.dir
-/home/neverov/Рабочий стол/cw-copilot-develop-secure-ticket-booking(1)/cw-copilot-develop-secure-ticket-booking/backend/build/CMakeFiles/edit_cache.dir
-/home/neverov/Рабочий стол/cw-copilot-develop-secure-ticket-booking(1)/cw-copilot-develop-secure-ticket-booking/backend/build/CMakeFiles/rebuild_cache.dir

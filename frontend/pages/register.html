@@ -302,12 +302,6 @@
                         verificationCodeGroup.style.display = 'block';
                         codeMessage.textContent = 'Код подтверждения отправлен на указанную почту';
                         codeMessage.style.color = '#008000';
-                        
-                        // Если есть debug_code (для тестирования)
-                        if (result.debug_code) {
-                            codeMessage.textContent += ` (для тестирования: ${result.debug_code})`;
-                        }
-                        
                         sendCodeBtn.textContent = 'Отправлено';
                     } else {
                         codeMessage.textContent = result?.error || 'Ошибка отправки кода';

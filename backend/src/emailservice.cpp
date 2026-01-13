@@ -104,13 +104,12 @@ json EmailService::sendVerificationCode(const string& email) {
         
         bool emailSent = sendEmail(email, subject, body);
         
-        response["success"] = true;
-        response["message"] = "Код подтверждения отправлен на указанную почту";
-        
-        // Если отправка не удалась, добавляем код для отладки
-        if (!emailSent) {
-            response["debug_code"] = code;
-            response["warning"] = "Email не был отправлен. Проверьте настройки SMTP.";
+        if (emailSent) {
+            response["success"] = true;
+            response["message"] = "Код подтверждения отправлен на указанную почту";
+        } else {
+            response["success"] = false;
+            response["error"] = "Не удалось отправить email. Проверьте правильность почты.";
         }
     } catch (const exception& e) {
         response["success"] = false;
@@ -158,12 +157,12 @@ json EmailService::sendPasswordToEmail(const string& email, const string& passwo
         
         bool emailSent = sendEmail(email, subject, body);
         
-        response["success"] = true;
-        response["message"] = "Новый пароль отправлен на указанную почту";
-        
-        if (!emailSent) {
-            response["debug_password"] = password;
-            response["warning"] = "Email не был отправлен. Проверьте настройки SMTP.";
+        if (emailSent) {
+            response["success"] = true;
+            response["message"] = "Новый пароль отправлен на указанную почту";
+        } else {
+            response["success"] = false;
+            response["error"] = "Не удалось отправить email. Проверьте правильность почты.";
         }
     } catch (const exception& e) {
         response["success"] = false;
