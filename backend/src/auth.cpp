@@ -255,14 +255,14 @@ json AuthService::verifyUserExists(const string& login, const string& email) {
         
         if (result.empty()) {
             response["success"] = false;
-            response["error"] = "Пользователь с таким логином и почтой не найден";
+            response["error"] = "Неверный логин или почта";
         } else {
             response["success"] = true;
-            response["message"] = "Пользователь найден";
+            response["message"] = "Данные подтверждены";
         }
     } catch (const exception& e) {
         response["success"] = false;
-        response["error"] = "Ошибка проверки пользователя: " + string(e.what());
+        response["error"] = "Ошибка проверки данных";
     }
     
     return response;
@@ -278,7 +278,7 @@ json AuthService::resetPassword(const string& login, const string& email, const 
         
         if (result.empty()) {
             response["success"] = false;
-            response["error"] = "Пользователь не найден";
+            response["error"] = "Ошибка сброса пароля";
             return response;
         }
         
