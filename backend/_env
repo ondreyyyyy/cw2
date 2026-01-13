@@ -13,8 +13,8 @@ SERVER_HOST=0.0.0.0
 JWT_SECRET=9fA3kL!2xQ@7MZ8r#vHc$WJmP1dB0N6E
 PASSWORD_SALT_ROUNDS=10
 
-# SMTP settings for email
+# SMTP settings for email (configure with your SMTP provider)
 SMTP_SERVER=smtp.yandex.ru
 SMTP_PORT=587
-SMTP_USER=andreyneverov11102006@yandex.ru
-SMTP_PASSWORD=dtxrslpmgpberrjy
+SMTP_USER=your_email@yandex.ru
+SMTP_PASSWORD=your_app_password

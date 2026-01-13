@@ -179,6 +179,14 @@
                 step4.style.display = stepNum === 4 ? 'block' : 'none';
             }
             
+            // Function to escape HTML to prevent XSS
+            function escapeHtml(text) {
+                if (text === null || text === undefined) return '';
+                const div = document.createElement('div');
+                div.textContent = String(text);
+                return div.innerHTML;
+            }
+            
             // Load filter options
             async function loadFilterOptions() {
                 try {
@@ -194,19 +202,28 @@
                     
                     if (genresResult.success) {
                         genresResult.genres.forEach(genre => {
-                            genreFilter.innerHTML += `<option value="${genre}">${genre}</option>`;
+                            const option = document.createElement('option');
+                            option.value = genre;
+                            option.textContent = genre;
+                            genreFilter.appendChild(option);
                         });
                     }
                     
                     if (citiesResult.success) {
                         citiesResult.cities.forEach(city => {
-                            cityFilter.innerHTML += `<option value="${city}">${city}</option>`;
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.textContent = city;
+                            cityFilter.appendChild(option);
                         });
                     }
                     
                     if (venuesResult.success) {
                         venuesResult.venues.forEach(venue => {
-                            venueFilter.innerHTML += `<option value="${venue.name}">${venue.name}</option>`;
+                            const option = document.createElement('option');
+                            option.value = venue.name;
+                            option.textContent = venue.name;
+                            venueFilter.appendChild(option);
                         });
                     }
                 } catch (error) {
@@ -245,17 +262,17 @@
                     // Проверка на малое количество билетов
                     let lowTicketsWarning = '';
                     if (event.lowTickets && event.availableTickets > 0) {
-                        lowTicketsWarning = `<p style="color: #800000; font-weight: bold; margin-top: 0.5rem;">Осталось ${event.availableTickets} билетов</p>`;
+                        lowTicketsWarning = `<p style="color: #800000; font-weight: bold; margin-top: 0.5rem;">Осталось ${escapeHtml(event.availableTickets)} билетов</p>`;
                     }
                     
                     card.innerHTML = `
-                        <h3 class="item-title">${event.title}</h3>
-                        <p class="item-info"><span>Жанр:</span> ${event.genre}</p>
-                        <p class="item-info"><span>Место:</span> ${event.venue.name}, ${event.venue.city}</p>
+                        <h3 class="item-title">${escapeHtml(event.title)}</h3>
+                        <p class="item-info"><span>Жанр:</span> ${escapeHtml(event.genre)}</p>
+                        <p class="item-info"><span>Место:</span> ${escapeHtml(event.venue.name)}, ${escapeHtml(event.venue.city)}</p>
                         <p class="item-info"><span>Дата:</span> ${formatDate(event.eventDate)}</p>
-                        <p class="item-info"><span>Возраст:</span> ${event.ageRestriction}</p>
+                        <p class="item-info"><span>Возраст:</span> ${escapeHtml(event.ageRestriction)}</p>
                         ${lowTicketsWarning}
-                        <button class="item-btn" data-event-id="${event.id}">Выбрать мероприятие</button>
+                        <button class="item-btn" data-event-id="${escapeHtml(event.id)}">Выбрать мероприятие</button>
                     `;
                     
                     card.querySelector('.item-btn').addEventListener('click', () => selectEvent(event));
@@ -477,30 +494,30 @@
                 confirmInfo.innerHTML = `
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Мероприятие</span>
-                        <span class="ticket-info-value">${selectedEvent.title}</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedEvent.title)}</span>
                     </div>
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Жанр</span>
-                        <span class="ticket-info-value">${selectedEvent.genre}</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedEvent.genre)}</span>
                     </div>
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Категория билета</span>
-                        <span class="ticket-info-value">${categoryName}</span>
+                        <span class="ticket-info-value">${escapeHtml(categoryName)}</span>
                     </div>
                     ${selectedTicket.rowNumber ? `
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Ряд / Место</span>
-                        <span class="ticket-info-value">${selectedTicket.rowNumber} / ${selectedTicket.seatNumber}</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedTicket.rowNumber)} / ${escapeHtml(selectedTicket.seatNumber)}</span>
                     </div>
                     ` : `
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Место</span>
-                        <span class="ticket-info-value">${selectedTicket.seatNumber}</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedTicket.seatNumber)}</span>
                     </div>
                     `}
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Место проведения</span>
-                        <span class="ticket-info-value">${selectedEvent.venue.name}, ${selectedEvent.venue.city}</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedEvent.venue.name)}, ${escapeHtml(selectedEvent.venue.city)}</span>
                     </div>
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Дата</span>
@@ -508,11 +525,11 @@
                     </div>
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Возрастное ограничение</span>
-                        <span class="ticket-info-value">${selectedEvent.ageRestriction}</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedEvent.ageRestriction)}</span>
                     </div>
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Цена</span>
-                        <span class="ticket-info-value">${selectedTicket.price} ₽</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedTicket.price)} ₽</span>
                     </div>
                 `;
             }

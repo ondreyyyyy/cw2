@@ -142,13 +142,30 @@
             let venueCategories = [];
             let currentVenueCapacity = 0;
             
+            // Function to escape HTML to prevent XSS
+            function escapeHtml(text) {
+                if (text === null || text === undefined) return '';
+                const div = document.createElement('div');
+                div.textContent = String(text);
+                return div.innerHTML;
+            }
+            
+            // Function to escape HTML attribute
+            function escapeAttr(text) {
+                if (text === null || text === undefined) return '';
+                return String(text).replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+            
             // Load cities
             async function loadCities() {
                 try {
                     const result = await eventsAPI.getCities();
                     if (result.success) {
                         result.cities.forEach(city => {
-                            citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.textContent = city;
+                            citySelect.appendChild(option);
                         });
                     }
                 } catch (error) {
@@ -343,7 +360,7 @@
                         
                         <div class="form-group">
                             <label class="form-label" for="editTitle">Название</label>
-                            <input type="text" class="form-input" id="editTitle" value="${event.title}" required>
+                            <input type="text" class="form-input" id="editTitle" value="${escapeAttr(event.title)}" required>
                         </div>
                         
                         <div class="form-group">
@@ -361,7 +378,7 @@
                         
                         <div class="form-group">
                             <label class="form-label">Площадка</label>
-                            <p style="color: #808080;">${event.venueName}, ${event.venueCity}</p>
+                            <p style="color: #808080;">${escapeHtml(event.venueName)}, ${escapeHtml(event.venueCity)}</p>
                         </div>
                         
                         <div class="form-group">
@@ -381,7 +398,7 @@
                         
                         <div class="form-group">
                             <label class="form-label" for="editDescription">Описание</label>
-                            <textarea class="form-input" id="editDescription" rows="4" style="resize: vertical;">${event.description || ''}</textarea>
+                            <textarea class="form-input" id="editDescription" rows="4" style="resize: vertical;">${escapeHtml(event.description || '')}</textarea>
                         </div>
                         
                         <h3 style="color: white; margin-bottom: 1rem; font-family: 'Inter', sans-serif;">Категории билетов</h3>
@@ -390,7 +407,7 @@
                         <div id="editMessage" style="display: none; margin-bottom: 1rem; font-size: 0.9rem;"></div>
                         
                         <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem;">
-                            <button type="button" class="submit-btn" id="saveEditBtn" data-event-id="${event.id}">Сохранить</button>
+                            <button type="button" class="submit-btn" id="saveEditBtn" data-event-id="${escapeAttr(event.id)}">Сохранить</button>
                             <button type="button" class="submit-btn" id="cancelEditBtn" style="background-color: #696969;">Отмена</button>
                         </div>
                     </div>
