@@ -49,6 +49,12 @@ public:
     // Восстановление пароля (отправка на почту)
     json recoverPassword(const string& login, const string& email);
 
+    // Проверка существования пользователя
+    json verifyUserExists(const string& login, const string& email);
+
+    // Сброс пароля (после подтверждения кода)
+    json resetPassword(const string& login, const string& email, const string& newPassword);
+
     // Смена пароля
     json changePassword(int userId, const string& oldPassword, const string& newPassword);
 

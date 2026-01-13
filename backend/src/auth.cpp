@@ -246,6 +246,61 @@ json AuthService::recoverPassword(const string& login, const string& email) {
     return response;
 }
 
+// Проверка существования пользователя
+json AuthService::verifyUserExists(const string& login, const string& email) {
+    json response;
+    
+    try {
+        auto result = Database::getInstance().executeQuery("get_user_by_login_and_email", {login, email});
+        
+        if (result.empty()) {
+            response["success"] = false;
+            response["error"] = "Пользователь с таким логином и почтой не найден";
+        } else {
+            response["success"] = true;
+            response["message"] = "Пользователь найден";
+        }
+    } catch (const exception& e) {
+        response["success"] = false;
+        response["error"] = "Ошибка проверки пользователя: " + string(e.what());
+    }
+    
+    return response;
+}
+
+// Сброс пароля после подтверждения кода
+json AuthService::resetPassword(const string& login, const string& email, const string& newPassword) {
+    json response;
+    
+    try {
+        // Проверка существования пользователя с указанным логином и почтой
+        auto result = Database::getInstance().executeQuery("get_user_by_login_and_email", {login, email});
+        
+        if (result.empty()) {
+            response["success"] = false;
+            response["error"] = "Пользователь не найден";
+            return response;
+        }
+        
+        int userId = result[0]["id"].as<int>();
+        
+        // Хешируем новый пароль
+        string newHash = PasswordUtils::hashPassword(newPassword);
+        
+        // Обновляем пароль в базе
+        Database::getInstance().executeQuery("update_user_password", {newHash, to_string(userId)});
+        
+        response["success"] = true;
+        response["message"] = "Пароль успешно изменен";
+        
+    } catch (const exception& e) {
+        response["success"] = false;
+        response["error"] = "Ошибка сброса пароля: " + string(e.what());
+    }
+    
+    return response;
+}
+
 // Смена пароля
 json AuthService::changePassword(int userId, const string& oldPassword, const string& newPassword) {
     json response;

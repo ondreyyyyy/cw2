@@ -99,6 +99,27 @@ const authAPI = {
         });
     },
     
+    async verifyCode(email, code) {
+        return await apiRequest('/verify-code', {
+            method: 'POST',
+            body: JSON.stringify({ email, code })
+        });
+    },
+    
+    async verifyUserExists(login, email) {
+        return await apiRequest('/verify-user-exists', {
+            method: 'POST',
+            body: JSON.stringify({ login, email })
+        });
+    },
+    
+    async resetPassword(login, email, newPassword) {
+        return await apiRequest('/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ login, email, newPassword })
+        });
+    },
+    
     async recoverPassword(login, email) {
         return await apiRequest('/recover-password', {
             method: 'POST',

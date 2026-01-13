@@ -172,13 +172,14 @@ json EmailService::sendPasswordToEmail(const string& email, const string& passwo
     return response;
 }
 
-// Отправка email через SMTP с поддержкой STARTTLS
+// Отправка email через SMTP с поддержкой SSL (порт 465) и STARTTLS (порт 587)
 bool EmailService::sendEmail(const string& to, const string& subject, const string& body) {
     // Получаем настройки SMTP из конфигурации
     string smtpServer = Config::getInstance().get("SMTP_SERVER", "smtp.gmail.com");
     string smtpPortStr = Config::getInstance().get("SMTP_PORT", "587");
     string smtpUser = Config::getInstance().get("SMTP_USER", "");
     string smtpPassword = Config::getInstance().get("SMTP_PASSWORD", "");
+    string smtpSsl = Config::getInstance().get("SMTP_SSL", "false");
     
     // Проверяем наличие настроек
     if (smtpUser.empty() || smtpPassword.empty()) {
@@ -187,6 +188,7 @@ bool EmailService::sendEmail(const string& to, const string& subject, const stri
     }
     
     int smtpPort = stoi(smtpPortStr);
+    bool useDirectSsl = (smtpSsl == "true" || smtpPort == 465);
     int sock = -1;
     SSL_CTX* ctx = nullptr;
     SSL* ssl = nullptr;
@@ -221,43 +223,67 @@ bool EmailService::sendEmail(const string& to, const string& subject, const stri
             throw runtime_error("Не удалось подключиться к SMTP серверу");
         }
         
-        // Читаем приветствие сервера
-        string response = readSocketResponse(sock);
-        if (response.substr(0, 3) != "220") {
-            throw runtime_error("Неверный ответ сервера: " + response);
-        }
-        
-        // Отправляем EHLO
-        string ehlo = "EHLO localhost\r\n";
-        send(sock, ehlo.c_str(), ehlo.length(), 0);
-        response = readSocketResponse(sock);
-        
-        // Отправляем STARTTLS для шифрования
-        string starttls = "STARTTLS\r\n";
-        send(sock, starttls.c_str(), starttls.length(), 0);
-        response = readSocketResponse(sock);
-        if (response.substr(0, 3) != "220") {
-            throw runtime_error("Сервер не поддерживает STARTTLS");
-        }
-        
         // Создаем SSL контекст
         ctx = SSL_CTX_new(TLS_client_method());
         if (!ctx) {
             throw runtime_error("Не удалось создать SSL контекст");
         }
         
-        // Создаем SSL соединение
-        ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, sock);
+        string response;
         
-        if (SSL_connect(ssl) <= 0) {
-            throw runtime_error("Не удалось установить SSL соединение");
+        if (useDirectSsl) {
+            // Прямое SSL подключение (порт 465)
+            ssl = SSL_new(ctx);
+            SSL_set_fd(ssl, sock);
+            
+            if (SSL_connect(ssl) <= 0) {
+                throw runtime_error("Не удалось установить SSL соединение");
+            }
+            
+            // Читаем приветствие сервера
+            response = readSmtpResponse(ssl);
+            if (response.substr(0, 3) != "220") {
+                throw runtime_error("Неверный ответ сервера: " + response);
+            }
+            
+            // Отправляем EHLO
+            string ehlo = "EHLO localhost\r\n";
+            SSL_write(ssl, ehlo.c_str(), ehlo.length());
+            response = readSmtpResponse(ssl);
+        } else {
+            // STARTTLS подключение (порт 587)
+            // Читаем приветствие сервера
+            response = readSocketResponse(sock);
+            if (response.substr(0, 3) != "220") {
+                throw runtime_error("Неверный ответ сервера: " + response);
+            }
+            
+            // Отправляем EHLO
+            string ehlo = "EHLO localhost\r\n";
+            send(sock, ehlo.c_str(), ehlo.length(), 0);
+            response = readSocketResponse(sock);
+            
+            // Отправляем STARTTLS для шифрования
+            string starttls = "STARTTLS\r\n";
+            send(sock, starttls.c_str(), starttls.length(), 0);
+            response = readSocketResponse(sock);
+            if (response.substr(0, 3) != "220") {
+                throw runtime_error("Сервер не поддерживает STARTTLS");
+            }
+            
+            // Создаем SSL соединение
+            ssl = SSL_new(ctx);
+            SSL_set_fd(ssl, sock);
+            
+            if (SSL_connect(ssl) <= 0) {
+                throw runtime_error("Не удалось установить SSL соединение");
+            }
+            
+            // Повторяем EHLO после STARTTLS
+            ehlo = "EHLO localhost\r\n";
+            SSL_write(ssl, ehlo.c_str(), ehlo.length());
+            response = readSmtpResponse(ssl);
         }
-        
-        // Повторяем EHLO после STARTTLS
-        ehlo = "EHLO localhost\r\n";
-        SSL_write(ssl, ehlo.c_str(), ehlo.length());
-        response = readSmtpResponse(ssl);
         
         // Аутентификация AUTH LOGIN
         string authLogin = "AUTH LOGIN\r\n";

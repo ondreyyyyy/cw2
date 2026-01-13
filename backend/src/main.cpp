@@ -247,6 +247,82 @@ int main() {
             }
         });
         
+        // POST /api/verify-code - Проверка кода подтверждения
+        server.post("/api/verify-code", [](const HttpRequest& request, HttpResponse& response) {
+            try {
+                json body = json::parse(request.body);
+                
+                string email = body.value("email", "");
+                string code = body.value("code", "");
+                
+                if (email.empty() || code.empty()) {
+                    response.statusCode = 400;
+                    json error = {{"success", false}, {"error", "Email и код обязательны"}};
+                    response.setJson(error);
+                    return;
+                }
+                
+                json result = EmailService::getInstance().verifyCode(email, code);
+                response.statusCode = result["success"].get<bool>() ? 200 : 400;
+                response.setJson(result);
+            } catch (const exception& e) {
+                response.statusCode = 400;
+                json error = {{"success", false}, {"error", "Неверный формат запроса"}};
+                response.setJson(error);
+            }
+        });
+        
+        // POST /api/verify-user-exists - Проверка существования пользователя
+        server.post("/api/verify-user-exists", [](const HttpRequest& request, HttpResponse& response) {
+            try {
+                json body = json::parse(request.body);
+                
+                string login = body.value("login", "");
+                string email = body.value("email", "");
+                
+                if (login.empty() || email.empty()) {
+                    response.statusCode = 400;
+                    json error = {{"success", false}, {"error", "Логин и почта обязательны"}};
+                    response.setJson(error);
+                    return;
+                }
+                
+                json result = AuthService::getInstance().verifyUserExists(login, email);
+                response.statusCode = result["success"].get<bool>() ? 200 : 400;
+                response.setJson(result);
+            } catch (const exception& e) {
+                response.statusCode = 400;
+                json error = {{"success", false}, {"error", "Неверный формат запроса"}};
+                response.setJson(error);
+            }
+        });
+        
+        // POST /api/reset-password - Сброс пароля после подтверждения кода
+        server.post("/api/reset-password", [](const HttpRequest& request, HttpResponse& response) {
+            try {
+                json body = json::parse(request.body);
+                
+                string login = body.value("login", "");
+                string email = body.value("email", "");
+                string newPassword = body.value("newPassword", "");
+                
+                if (login.empty() || email.empty() || newPassword.empty()) {
+                    response.statusCode = 400;
+                    json error = {{"success", false}, {"error", "Все поля обязательны"}};
+                    response.setJson(error);
+                    return;
+                }
+                
+                json result = AuthService::getInstance().resetPassword(login, email, newPassword);
+                response.statusCode = result["success"].get<bool>() ? 200 : 400;
+                response.setJson(result);
+            } catch (const exception& e) {
+                response.statusCode = 400;
+                json error = {{"success", false}, {"error", "Неверный формат запроса"}};
+                response.setJson(error);
+            }
+        });
+        
         // =====================================================
         // API маршруты для мероприятий
         // =====================================================
