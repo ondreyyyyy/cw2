@@ -1,0 +1,20 @@
+# Database connection settings
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=concert_db
+DB_USER=concert_user
+DB_PASSWORD=concertuser2025
+
+# Server settings
+SERVER_PORT=8080
+SERVER_HOST=0.0.0.0
+
+# Security settings
+JWT_SECRET=9fA3kL!2xQ@7MZ8r#vHc$WJmP1dB0N6E
+PASSWORD_SALT_ROUNDS=10
+
+# SMTP settings for email
+SMTP_SERVER=smtp.yandex.ru
+SMTP_PORT=587
+SMTP_USER=andreyneverov11102006@yandex.ru
+SMTP_PASSWORD=dtxrslpmgpberrjy
