@@ -168,7 +168,7 @@
                     if (result.success) {
                         venueSelect.innerHTML = '<option value="">Выберите площадку</option>';
                         result.venues.forEach(venue => {
-                            venueSelect.innerHTML += `<option value="${venue.id}" data-capacity="${venue.capacity}">${venue.name} (вместимость: ${venue.capacity})</option>`;
+                            venueSelect.innerHTML += `<option value="${venue.id}" data-capacity="${venue.capacity}">${venue.name}</option>`;
                         });
                     }
                 } catch (error) {

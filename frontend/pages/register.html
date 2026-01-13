@@ -12,7 +12,7 @@
 <body>
     <div class="auth-container">
         <form class="auth-form" id="registerForm" style="max-width: 550px;">
-            <div class="auth-logo">tickethub</div>
+            <a href="../index.html" class="auth-logo">tickethub</a>
             <h1 class="auth-title">Регистрация</h1>
             
             <div class="form-group">
@@ -20,9 +20,12 @@
                 <input type="text" class="form-input" id="login" name="login" maxlength="15" required>
             </div>
             
-            <div class="form-group">
-                <label class="form-label" for="fullName">ФИО</label>
-                <input type="text" class="form-input" id="fullName" name="fullName" required>
+            <div class="form-group" style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <label class="form-label" for="fullName">ФИО</label>
+                    <input type="text" class="form-input" id="fullName" name="fullName" maxlength="40" required>
+                </div>
+                <div id="fullNameError" class="error-text" style="display: none; padding-top: 2rem;" role="alert">Неверный формат ФИО</div>
             </div>
             
             <div class="form-group" style="display: flex; gap: 1rem; align-items: flex-start;">
@@ -110,6 +113,7 @@
             
             const emailError = document.getElementById('emailError');
             const passwordMatchError = document.getElementById('passwordMatchError');
+            const fullNameError = document.getElementById('fullNameError');
             
             const reqUppercase = document.getElementById('reqUppercase');
             const reqSpecial = document.getElementById('reqSpecial');
@@ -119,8 +123,57 @@
             
             // Email validation
             function validateEmail(email) {
-                const validDomains = ['@yandex.ru', '@mail.ru', '@google.com'];
-                return validDomains.some(domain => email.endsWith(domain));
+                // Check for special characters (only allow letters, numbers, dots, underscores, hyphens before @)
+                const specialCharsRegex = /[!?'№#$%^&*()+=\[\]{};:"\\|,<>\/`~]/;
+                if (specialCharsRegex.test(email)) {
+                    return false;
+                }
+                
+                // Check for valid email format
+                const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(email)) {
+                    return false;
+                }
+                
+                // Check for double @ (multiple domains)
+                const atCount = (email.match(/@/g) || []).length;
+                if (atCount !== 1) {
+                    return false;
+                }
+                
+                // Check for valid domains
+                const validDomains = ['@yandex.ru', '@mail.ru', '@gmail.com', '@google.com'];
+                return validDomains.some(domain => email.toLowerCase().endsWith(domain));
+            }
+            
+            // FIO (Full Name) validation
+            function validateFullName(fullName) {
+                // Check max length
+                if (fullName.length > 40 || fullName.length === 0) {
+                    return false;
+                }
+                
+                // Check for special characters - only allow letters (including Russian), spaces, and hyphens
+                const specialCharsRegex = /[!@#$%^&*()+=\[\]{};':"\\|,.<>\/?`~0-9№_]/;
+                if (specialCharsRegex.test(fullName)) {
+                    return false;
+                }
+                
+                // Split by spaces and check that there are exactly 3 words
+                const words = fullName.trim().split(/\s+/);
+                if (words.length !== 3) {
+                    return false;
+                }
+                
+                // Each word should contain only letters (Russian or Latin) and optionally hyphen
+                const wordRegex = /^[a-zA-Zа-яА-ЯёЁ-]+$/;
+                for (const word of words) {
+                    if (!wordRegex.test(word) || word.length < 2) {
+                        return false;
+                    }
+                }
+                
+                return true;
             }
             
             // Password validation
@@ -187,6 +240,19 @@
                 }
             }
             
+            // Check FIO validity
+            function checkFullName() {
+                const fullName = fullNameInput.value.trim();
+                
+                if (fullName.length > 0 && !validateFullName(fullName)) {
+                    fullNameError.style.display = 'block';
+                    return false;
+                } else {
+                    fullNameError.style.display = 'none';
+                    return true;
+                }
+            }
+            
             // Full form validation
             function validateForm() {
                 const login = loginInput.value.trim();
@@ -199,9 +265,10 @@
                 const passwordValidation = validatePassword(password);
                 const emailValid = validateEmail(email);
                 const passwordsMatch = password === confirmPassword;
+                const fullNameValid = validateFullName(fullName);
                 
                 return login.length > 0 && 
-                       fullName.length > 0 && 
+                       fullNameValid && 
                        emailValid && 
                        passwordValidation.isValid && 
                        passwordsMatch &&
@@ -260,7 +327,10 @@
             
             // Event listeners
             loginInput.addEventListener('input', updateSubmitButton);
-            fullNameInput.addEventListener('input', updateSubmitButton);
+            fullNameInput.addEventListener('input', () => {
+                checkFullName();
+                updateSubmitButton();
+            });
             verificationCodeInput.addEventListener('input', updateSubmitButton);
             
             emailInput.addEventListener('input', () => {

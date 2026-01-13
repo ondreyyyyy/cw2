@@ -286,6 +286,17 @@
             function displayCategories(categories) {
                 categoriesContainer.innerHTML = '';
                 
+                // Add "All categories" button first
+                const allBtn = document.createElement('button');
+                allBtn.className = 'category-btn';
+                allBtn.textContent = 'Все категории';
+                allBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    allBtn.classList.add('active');
+                    showAllCategories();
+                });
+                categoriesContainer.appendChild(allBtn);
+                
                 categories.forEach((category, index) => {
                     const btn = document.createElement('button');
                     btn.className = 'category-btn' + (index === 0 ? ' active' : '');
@@ -301,6 +312,23 @@
                 // Select first category by default
                 if (categories.length > 0) {
                     selectCategory(categories[0]);
+                }
+            }
+            
+            // Show all categories (all available tickets)
+            async function showAllCategories() {
+                selectedCategory = null;
+                selectedTicket = null;
+                
+                try {
+                    const result = await eventsAPI.getAvailableTickets(selectedEvent.id);
+                    
+                    if (result.success) {
+                        availableTickets = result.tickets;
+                        displaySeats(result.tickets);
+                    }
+                } catch (error) {
+                    console.error('Failed to load all tickets:', error);
                 }
             }
             
@@ -403,6 +431,7 @@
             
             // Display confirmation
             function displayConfirmation() {
+                const categoryName = selectedCategory ? selectedCategory.categoryName : (selectedTicket.categoryName || 'Неизвестно');
                 confirmInfo.innerHTML = `
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Мероприятие</span>
@@ -414,7 +443,7 @@
                     </div>
                     <div class="ticket-info-row">
                         <span class="ticket-info-label">Категория билета</span>
-                        <span class="ticket-info-value">${selectedCategory.categoryName}</span>
+                        <span class="ticket-info-value">${categoryName}</span>
                     </div>
                     ${selectedTicket.rowNumber ? `
                     <div class="ticket-info-row">
@@ -460,11 +489,24 @@
             
             // Event listeners
             document.getElementById('applyFilters').addEventListener('click', () => {
+                const dateFrom = document.getElementById('dateFromFilter').value;
+                const dateTo = document.getElementById('dateToFilter').value;
+                
+                // Validate dates
+                if (dateFrom && dateTo) {
+                    const fromDate = new Date(dateFrom);
+                    const toDate = new Date(dateTo);
+                    if (fromDate > toDate) {
+                        alert('Дата "от" не может быть позже даты "до"');
+                        return;
+                    }
+                }
+                
                 const filters = {
                     genre: document.getElementById('genreFilter').value,
                     city: document.getElementById('cityFilter').value,
-                    dateFrom: document.getElementById('dateFromFilter').value,
-                    dateTo: document.getElementById('dateToFilter').value,
+                    dateFrom: dateFrom,
+                    dateTo: dateTo,
                     venue: document.getElementById('venueFilter').value,
                     ageRestriction: document.getElementById('ageFilter').value
                 };

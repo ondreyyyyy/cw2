@@ -359,11 +359,24 @@
             
             // Apply filters
             document.getElementById('applyFilters').addEventListener('click', () => {
+                const dateFrom = document.getElementById('dateFromFilter').value;
+                const dateTo = document.getElementById('dateToFilter').value;
+                
+                // Validate dates
+                if (dateFrom && dateTo) {
+                    const fromDate = new Date(dateFrom);
+                    const toDate = new Date(dateTo);
+                    if (fromDate > toDate) {
+                        alert('Дата "от" не может быть позже даты "до"');
+                        return;
+                    }
+                }
+                
                 const filters = {
                     genre: document.getElementById('genreFilter').value,
                     city: document.getElementById('cityFilter').value,
-                    dateFrom: document.getElementById('dateFromFilter').value,
-                    dateTo: document.getElementById('dateToFilter').value,
+                    dateFrom: dateFrom,
+                    dateTo: dateTo,
                     venue: document.getElementById('venueFilter').value,
                     ageRestriction: document.getElementById('ageFilter').value
                 };
