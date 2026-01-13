@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бронирование - tickethub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Vollkorn:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="../index.html" class="logo">tickethub</a>
+            <div class="nav-links">
+                <a href="tickets.html" class="nav-link">Билеты</a>
+                <a href="events.html" class="nav-link">Мероприятия</a>
+                <a href="booking-info.html" class="nav-link">Бронирование</a>
+            </div>
+            <div class="auth-section">
+                <a href="login.html" class="login-btn" id="loginBtn">Войти</a>
+                <div class="user-section" id="userSection" style="display: none;">
+                    <span class="username" id="username"></span>
+                    <button class="logout-btn" id="logoutBtn">Выйти</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Как происходит процесс бронирования</h1>
+        
+        <section class="info-steps">
+            <div class="info-step">
+                <div class="step-number">
+                    <span>01</span>
+                </div>
+                <p class="info-step-text">После входа в систему перейдите во вкладку «Мероприятия»</p>
+            </div>
+            
+            <div class="info-step">
+                <div class="step-number">
+                    <span>02</span>
+                </div>
+                <p class="info-step-text">Во вкладке «Мероприятия» ознакомьтесь со списком мероприятий и выберите подходящее, после чего вы будете перенаправлены на страницу бронирования билета на выбранное мероприятие</p>
+            </div>
+            
+            <div class="info-step">
+                <div class="step-number">
+                    <span>03</span>
+                </div>
+                <p class="info-step-text">После бронирования перейдите во вкладку «Билеты», затем в раздел «Активные», где будет находиться ваш забронированный билет</p>
+            </div>
+        </section>
+        
+        <button class="start-btn center-btn" id="goToEventsBtn">Перейти к мероприятиям</button>
+    </main>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const goToEventsBtn = document.getElementById('goToEventsBtn');
+            
+            goToEventsBtn.addEventListener('click', () => {
+                if (isAuthenticated()) {
+                    window.location.href = '/pages/events.html';
+                } else {
+                    window.location.href = '/pages/login.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
