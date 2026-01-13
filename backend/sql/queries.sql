@@ -221,7 +221,7 @@ SELECT bt.id AS booking_id, bt.booking_date, bt.status,
        at.id AS ticket_id, at.row_number, at.seat_number, at.price,
        tc.category_name,
        e.id AS event_id, e.title, e.genre, e.event_date, e.age_restriction,
-       v.name AS venue_name, v.city AS venue_city
+       v.name AS venue_name, v.city AS venue_city, v.layout_type
 FROM booked_tickets bt
 JOIN available_tickets at ON bt.ticket_id = at.id
 JOIN ticket_categories tc ON at.category_id = tc.id

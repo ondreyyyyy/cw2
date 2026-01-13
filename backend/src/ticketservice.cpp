@@ -149,9 +149,9 @@ json TicketService::getUserBookings(int userId) {
                 {"genre", row["genre"].as<string>()},
                 {"eventDate", row["event_date"].as<string>()},
                 {"ageRestriction", row["age_restriction"].as<string>()},
-                {"imageUrl", row["image_url"].is_null() ? "" : row["image_url"].as<string>()},
                 {"venueName", row["venue_name"].as<string>()},
-                {"venueCity", row["venue_city"].as<string>()}
+                {"venueCity", row["venue_city"].as<string>()},
+                {"layoutType", row["layout_type"].is_null() ? "" : row["layout_type"].as<string>()}
             };
             bookings.push_back(booking);
         }
@@ -204,9 +204,9 @@ json TicketService::getFilteredUserBookings(int userId, const string& genre, con
                 {"genre", row["genre"].as<string>()},
                 {"eventDate", row["event_date"].as<string>()},
                 {"ageRestriction", row["age_restriction"].as<string>()},
-                {"imageUrl", row["image_url"].is_null() ? "" : row["image_url"].as<string>()},
                 {"venueName", row["venue_name"].as<string>()},
-                {"venueCity", row["venue_city"].as<string>()}
+                {"venueCity", row["venue_city"].as<string>()},
+                {"layoutType", row["layout_type"].is_null() ? "" : row["layout_type"].as<string>()}
             };
             bookings.push_back(booking);
         }
