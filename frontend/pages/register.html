@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - tickethub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Vollkorn:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="auth-container">
+        <form class="auth-form" id="registerForm" style="max-width: 550px;">
+            <a href="../index.html" class="auth-logo">tickethub</a>
+            <h1 class="auth-title">Регистрация</h1>
+            
+            <div class="form-group">
+                <label class="form-label" for="login">Логин</label>
+                <input type="text" class="form-input" id="login" name="login" maxlength="15" required>
+            </div>
+            
+            <div class="form-group" style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <label class="form-label" for="fullName">ФИО</label>
+                    <input type="text" class="form-input" id="fullName" name="fullName" maxlength="40" required>
+                </div>
+                <div id="fullNameError" class="error-text" style="display: none; padding-top: 2rem;" role="alert">Неверный формат ФИО</div>
+            </div>
+            
+            <div class="form-group" style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <label class="form-label" for="email">Электронная почта</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="email" class="form-input" id="email" name="email" required style="flex: 1;" aria-describedby="emailError codeMessage">
+                        <button type="button" class="submit-btn" id="sendCodeBtn" style="white-space: nowrap; padding: 0.5rem 1rem; font-size: 0.9rem;" aria-label="Получить код подтверждения на email">Получить код</button>
+                    </div>
+                </div>
+                <div id="emailError" class="error-text" style="display: none; padding-top: 2rem;" role="alert">Неверный формат</div>
+            </div>
+            
+            <div class="form-group" id="verificationCodeGroup" style="display: none;">
+                <label class="form-label" for="verificationCode">Код подтверждения</label>
+                <input type="text" class="form-input" id="verificationCode" name="verificationCode" maxlength="6" placeholder="6 цифр" aria-describedby="codeMessage">
+                <p id="codeMessage" style="color: #008000; font-size: 0.9rem; margin-top: 0.5rem;" role="status"></p>
+                <div style="margin-top: 0.5rem;">
+                    <span id="resendTimer" style="color: #808080; font-size: 0.9rem;"></span>
+                    <button type="button" id="resendCodeBtn" style="background: none; border: none; color: white; cursor: pointer; font-size: 0.9rem; text-decoration: underline; display: none;">Отправить повторно</button>
+                </div>
+            </div>
+            
+            <div class="form-group" style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <label class="form-label" for="password">Пароль</label>
+                    <input type="password" class="form-input" id="password" name="password" maxlength="15" required>
+                </div>
+                <div class="password-requirements" id="passwordRequirements" style="min-width: 200px; padding-top: 0; margin-top: 1.75rem;">
+                    <div class="requirement" id="reqUppercase">
+                        <span class="requirement-icon invalid">✗</span>
+                        <span class="requirement-text">Минимум 1 заглавная буква</span>
+                    </div>
+                    <div class="requirement" id="reqSpecial">
+                        <span class="requirement-icon invalid">✗</span>
+                        <span class="requirement-text">Минимум 1 спецсимвол</span>
+                    </div>
+                    <div class="requirement" id="reqDigits">
+                        <span class="requirement-icon invalid">✗</span>
+                        <span class="requirement-text">Минимум 2 цифры</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group" style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <label class="form-label" for="confirmPassword">Повторите пароль</label>
+                    <input type="password" class="form-input" id="confirmPassword" name="confirmPassword" maxlength="15" required>
+                </div>
+                <div id="passwordMatchError" class="error-text" style="display: none; padding-top: 2rem;">Пароли не совпадают</div>
+            </div>
+            
+            <div id="errorMessage" class="error-text" style="display: none; margin-bottom: 1rem;"></div>
+            
+            <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                <button type="submit" class="submit-btn" id="submitBtn" disabled>Зарегистрироваться</button>
+            </div>
+            
+            <div class="auth-footer">
+                <span class="auth-footer-text">Уже есть аккаунт.</span>
+                <a href="login.html" class="auth-footer-link">Войти</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Redirect if already logged in
+            if (isAuthenticated()) {
+                window.location.href = '/pages/events.html';
+                return;
+            }
+            
+            const form = document.getElementById('registerForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const sendCodeBtn = document.getElementById('sendCodeBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const codeMessage = document.getElementById('codeMessage');
+            const verificationCodeGroup = document.getElementById('verificationCodeGroup');
+            
+            const loginInput = document.getElementById('login');
+            const fullNameInput = document.getElementById('fullName');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const verificationCodeInput = document.getElementById('verificationCode');
+            
+            const emailError = document.getElementById('emailError');
+            const passwordMatchError = document.getElementById('passwordMatchError');
+            const fullNameError = document.getElementById('fullNameError');
+            
+            const reqUppercase = document.getElementById('reqUppercase');
+            const reqSpecial = document.getElementById('reqSpecial');
+            const reqDigits = document.getElementById('reqDigits');
+            
+            let codeRequested = false;
+            
+            // Login validation - only Latin letters and Arabic numerals
+            function validateLogin(login) {
+                const loginRegex = /^[a-zA-Z0-9]+$/;
+                return loginRegex.test(login) && login.length > 0;
+            }
+            
+            // Filter login input to only allow valid characters
+            loginInput.addEventListener('input', () => {
+                const filteredValue = loginInput.value.replace(/[^a-zA-Z0-9]/g, '');
+                if (filteredValue !== loginInput.value) {
+                    loginInput.value = filteredValue;
+                }
+                updateSubmitButton();
+            });
+            
+            // Email validation
+            function validateEmail(email) {
+                // Check for special characters (only allow letters, numbers, dots, underscores, hyphens before @)
+                const specialCharsRegex = /[!?'№#$%^&*()+=\[\]{};:"\\|,<>\/`~]/;
+                if (specialCharsRegex.test(email)) {
+                    return false;
+                }
+                
+                // Check for valid email format
+                const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(email)) {
+                    return false;
+                }
+                
+                // Check for double @ (multiple domains)
+                const atCount = (email.match(/@/g) || []).length;
+                if (atCount !== 1) {
+                    return false;
+                }
+                
+                // Check for valid domains
+                const validDomains = ['@yandex.ru', '@mail.ru', '@gmail.com', '@google.com'];
+                return validDomains.some(domain => email.toLowerCase().endsWith(domain));
+            }
+            
+            // FIO (Full Name) validation
+            function validateFullName(fullName) {
+                // Check max length
+                if (fullName.length > 40 || fullName.length === 0) {
+                    return false;
+                }
+                
+                // Check for special characters - only allow letters (including Russian), spaces, and hyphens
+                const specialCharsRegex = /[!@#$%^&*()+=\[\]{};':"\\|,.<>\/?`~0-9№_]/;
+                if (specialCharsRegex.test(fullName)) {
+                    return false;
+                }
+                
+                // Split by spaces and check that there are exactly 3 words
+                const words = fullName.trim().split(/\s+/);
+                if (words.length !== 3) {
+                    return false;
+                }
+                
+                // Each word should contain only letters (Russian or Latin) and optionally hyphen
+                const wordRegex = /^[a-zA-Zа-яА-ЯёЁ-]+$/;
+                for (const word of words) {
+                    if (!wordRegex.test(word) || word.length < 2) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            // Password validation
+            function validatePassword(password) {
+                const hasUppercase = /[A-ZА-ЯЁ]/.test(password);
+                const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+                const digitCount = (password.match(/\d/g) || []).length;
+                
+                return {
+                    hasUppercase,
+                    hasSpecial,
+                    hasDigits: digitCount >= 2,
+                    isValid: hasUppercase && hasSpecial && digitCount >= 2
+                };
+            }
+            
+            // Update password requirements UI
+            function updatePasswordRequirements() {
+                const password = passwordInput.value;
+                const validation = validatePassword(password);
+                
+                updateRequirement(reqUppercase, validation.hasUppercase);
+                updateRequirement(reqSpecial, validation.hasSpecial);
+                updateRequirement(reqDigits, validation.hasDigits);
+            }
+            
+            function updateRequirement(element, isValid) {
+                const icon = element.querySelector('.requirement-icon');
+                if (isValid) {
+                    icon.textContent = '✓';
+                    icon.classList.remove('invalid');
+                    icon.classList.add('valid');
+                } else {
+                    icon.textContent = '✗';
+                    icon.classList.remove('valid');
+                    icon.classList.add('invalid');
+                }
+            }
+            
+            // Check passwords match
+            function checkPasswordsMatch() {
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+                
+                if (confirmPassword.length > 0 && password !== confirmPassword) {
+                    passwordMatchError.style.display = 'block';
+                    return false;
+                } else {
+                    passwordMatchError.style.display = 'none';
+                    return true;
+                }
+            }
+            
+            // Check email validity
+            function checkEmail() {
+                const email = emailInput.value.trim();
+                
+                if (email.length > 0 && !validateEmail(email)) {
+                    emailError.style.display = 'block';
+                    return false;
+                } else {
+                    emailError.style.display = 'none';
+                    return true;
+                }
+            }
+            
+            // Check FIO validity
+            function checkFullName() {
+                const fullName = fullNameInput.value.trim();
+                
+                if (fullName.length > 0 && !validateFullName(fullName)) {
+                    fullNameError.style.display = 'block';
+                    return false;
+                } else {
+                    fullNameError.style.display = 'none';
+                    return true;
+                }
+            }
+            
+            // Full form validation
+            function validateForm() {
+                const login = loginInput.value.trim();
+                const fullName = fullNameInput.value.trim();
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+                const verificationCode = verificationCodeInput.value.trim();
+                
+                const passwordValidation = validatePassword(password);
+                const emailValid = validateEmail(email);
+                const passwordsMatch = password === confirmPassword;
+                const fullNameValid = validateFullName(fullName);
+                const loginValid = validateLogin(login);
+                
+                return loginValid && 
+                       fullNameValid && 
+                       emailValid && 
+                       passwordValidation.isValid && 
+                       passwordsMatch &&
+                       password.length > 0 &&
+                       verificationCode.length === 6 &&
+                       codeRequested;
+            }
+            
+            // Update submit button state
+            function updateSubmitButton() {
+                submitBtn.disabled = !validateForm();
+            }
+            
+            const resendTimer = document.getElementById('resendTimer');
+            const resendCodeBtn = document.getElementById('resendCodeBtn');
+            let resendCountdown = 0;
+            let countdownInterval = null;
+            
+            // Start resend countdown
+            function startResendCountdown() {
+                resendCountdown = 60;
+                resendCodeBtn.style.display = 'none';
+                resendTimer.style.display = 'inline';
+                resendTimer.textContent = `Отправить повторно через ${resendCountdown} сек`;
+                
+                if (countdownInterval) clearInterval(countdownInterval);
+                
+                countdownInterval = setInterval(() => {
+                    resendCountdown--;
+                    if (resendCountdown <= 0) {
+                        clearInterval(countdownInterval);
+                        resendTimer.style.display = 'none';
+                        resendCodeBtn.style.display = 'inline';
+                    } else {
+                        resendTimer.textContent = `Отправить повторно через ${resendCountdown} сек`;
+                    }
+                }, 1000);
+            }
+            
+            // Send verification code
+            sendCodeBtn.addEventListener('click', async () => {
+                const email = emailInput.value.trim();
+                
+                if (!validateEmail(email)) {
+                    emailError.style.display = 'block';
+                    return;
+                }
+                
+                sendCodeBtn.disabled = true;
+                sendCodeBtn.textContent = 'Отправка...';
+                
+                try {
+                    const result = await authAPI.sendVerificationCode(email);
+                    
+                    if (result && result.success) {
+                        codeRequested = true;
+                        verificationCodeGroup.style.display = 'block';
+                        codeMessage.textContent = 'Код подтверждения отправлен на указанную почту';
+                        codeMessage.style.color = '#008000';
+                        sendCodeBtn.textContent = 'Отправлено';
+                        startResendCountdown();
+                    } else {
+                        codeMessage.textContent = result?.error || 'Ошибка отправки кода';
+                        codeMessage.style.color = '#800000';
+                        sendCodeBtn.disabled = false;
+                        sendCodeBtn.textContent = 'Получить код';
+                    }
+                } catch (error) {
+                    codeMessage.textContent = 'Ошибка соединения с сервером';
+                    codeMessage.style.color = '#800000';
+                    sendCodeBtn.disabled = false;
+                    sendCodeBtn.textContent = 'Получить код';
+                }
+                
+                updateSubmitButton();
+            });
+            
+            // Resend code button
+            resendCodeBtn.addEventListener('click', async () => {
+                const email = emailInput.value.trim();
+                
+                resendCodeBtn.style.display = 'none';
+                resendTimer.textContent = 'Отправка...';
+                resendTimer.style.display = 'inline';
+                
+                try {
+                    const result = await authAPI.sendVerificationCode(email);
+                    
+                    if (result && result.success) {
+                        codeMessage.textContent = 'Код подтверждения отправлен повторно';
+                        codeMessage.style.color = '#008000';
+                        startResendCountdown();
+                    } else {
+                        codeMessage.textContent = result?.error || 'Ошибка отправки кода';
+                        codeMessage.style.color = '#800000';
+                        resendCodeBtn.style.display = 'inline';
+                        resendTimer.style.display = 'none';
+                    }
+                } catch (error) {
+                    codeMessage.textContent = 'Ошибка соединения с сервером';
+                    codeMessage.style.color = '#800000';
+                    resendCodeBtn.style.display = 'inline';
+                    resendTimer.style.display = 'none';
+                }
+            });
+            
+            // Event listeners
+            fullNameInput.addEventListener('input', () => {
+                checkFullName();
+                updateSubmitButton();
+            });
+            verificationCodeInput.addEventListener('input', updateSubmitButton);
+            
+            emailInput.addEventListener('input', () => {
+                checkEmail();
+                updateSubmitButton();
+            });
+            
+            passwordInput.addEventListener('input', () => {
+                updatePasswordRequirements();
+                checkPasswordsMatch();
+                updateSubmitButton();
+            });
+            
+            confirmPasswordInput.addEventListener('input', () => {
+                checkPasswordsMatch();
+                updateSubmitButton();
+            });
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!validateForm()) return;
+                
+                const login = loginInput.value.trim();
+                const fullName = fullNameInput.value.trim();
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                const verificationCode = verificationCodeInput.value.trim();
+                
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Регистрация...';
+                errorMessage.style.display = 'none';
+                
+                try {
+                    const result = await authAPI.register(login, email, fullName, password, verificationCode);
+                    
+                    if (result && result.success) {
+                        setAuthToken(result.token);
+                        setCurrentUser(result.user);
+                        window.location.href = '/pages/events.html';
+                    } else {
+                        errorMessage.textContent = result?.error || 'Ошибка регистрации';
+                        errorMessage.style.display = 'block';
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Зарегистрироваться';
+                    }
+                } catch (error) {
+                    errorMessage.textContent = 'Ошибка соединения с сервером';
+                    errorMessage.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Зарегистрироваться';
+                }
+            });
+            
+            updatePasswordRequirements();
+            updateSubmitButton();
+        });
+    </script>
+</body>
+</html>

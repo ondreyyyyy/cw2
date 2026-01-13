@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Билеты - tickethub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Vollkorn:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="../index.html" class="logo">tickethub</a>
+            <div class="nav-links">
+                <a href="tickets.html" class="nav-link">Билеты</a>
+                <a href="events.html" class="nav-link">Мероприятия</a>
+                <a href="booking-info.html" class="nav-link">Бронирование</a>
+            </div>
+            <div class="auth-section">
+                <a href="login.html" class="login-btn" id="loginBtn">Войти</a>
+                <div class="user-section" id="userSection" style="display: none;">
+                    <span class="username" id="username"></span>
+                    <button class="logout-btn" id="logoutBtn">Выйти</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Модальное окно возврата билета -->
+    <div class="refund-modal" id="refundModal">
+        <div class="refund-modal-content">
+            <h2 class="refund-modal-title">Вы уверены, что хотите вернуть билет на данное мероприятие?</h2>
+            <div class="refund-ticket-info" id="refundTicketInfo">
+                <!-- Информация о билете будет загружена сюда -->
+            </div>
+            <div class="refund-modal-buttons">
+                <button class="refund-confirm-btn" id="refundConfirmBtn">Подтвердить</button>
+                <button class="refund-cancel-btn" id="refundCancelBtn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-header-title" id="pageTitle">Ваши билеты</h1>
+        </div>
+        
+        <!-- Filter Panel -->
+        <div class="filter-panel" id="filterPanel">
+            <div class="filter-group">
+                <label class="filter-label">Жанр</label>
+                <select class="filter-select" id="genreFilter">
+                    <option value="">Все жанры</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Город</label>
+                <select class="filter-select" id="cityFilter">
+                    <option value="">Все города</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Дата от</label>
+                <input type="date" class="filter-input" id="dateFromFilter">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Дата до</label>
+                <input type="date" class="filter-input" id="dateToFilter">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Место проведения</label>
+                <select class="filter-select" id="venueFilter">
+                    <option value="">Все площадки</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Возраст</label>
+                <select class="filter-select" id="ageFilter">
+                    <option value="">Любой</option>
+                    <option value="0+">0+</option>
+                    <option value="12+">12+</option>
+                    <option value="16+">16+</option>
+                    <option value="18+">18+</option>
+                </select>
+            </div>
+            <button class="filter-btn" id="applyFilters">Применить</button>
+            <button class="reset-filter-btn" id="resetFilters">Сбросить</button>
+        </div>
+        
+        <!-- Tickets List -->
+        <div class="items-container" id="ticketsList"></div>
+        
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <p class="empty-state-text">У вас нет билетов</p>
+            <button class="start-btn" id="goToEventsBtn">К мероприятиям</button>
+        </div>
+    </main>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            if (!requireAuth()) return;
+            
+            const ticketsList = document.getElementById('ticketsList');
+            const emptyState = document.getElementById('emptyState');
+            const filterPanel = document.getElementById('filterPanel');
+            const pageTitle = document.getElementById('pageTitle');
+            const goToEventsBtn = document.getElementById('goToEventsBtn');
+            
+            // Модальное окно возврата билета
+            const refundModal = document.getElementById('refundModal');
+            const refundTicketInfo = document.getElementById('refundTicketInfo');
+            const refundConfirmBtn = document.getElementById('refundConfirmBtn');
+            const refundCancelBtn = document.getElementById('refundCancelBtn');
+            let currentRefundBooking = null;
+            
+            // Map для хранения данных бронирований (защита от XSS)
+            const bookingsMap = new Map();
+            
+            // Функция для экранирования HTML (защита от XSS)
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Load filter options
+            async function loadFilterOptions() {
+                try {
+                    const [genresResult, citiesResult, venuesResult] = await Promise.all([
+                        eventsAPI.getGenres(),
+                        eventsAPI.getCities(),
+                        eventsAPI.getVenues()
+                    ]);
+                    
+                    const genreFilter = document.getElementById('genreFilter');
+                    const cityFilter = document.getElementById('cityFilter');
+                    const venueFilter = document.getElementById('venueFilter');
+                    
+                    if (genresResult.success) {
+                        genresResult.genres.forEach(genre => {
+                            const option = document.createElement('option');
+                            option.value = genre;
+                            option.textContent = genre;
+                            genreFilter.appendChild(option);
+                        });
+                    }
+                    
+                    if (citiesResult.success) {
+                        citiesResult.cities.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.textContent = city;
+                            cityFilter.appendChild(option);
+                        });
+                    }
+                    
+                    if (venuesResult.success) {
+                        venuesResult.venues.forEach(venue => {
+                            const option = document.createElement('option');
+                            option.value = venue.name;
+                            option.textContent = venue.name;
+                            venueFilter.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to load filter options:', error);
+                }
+            }
+            
+            // Load bookings
+            async function loadBookings(filters = {}) {
+                try {
+                    const result = await bookingsAPI.getAll(filters);
+                    
+                    if (result.success) {
+                        displayBookings(result.bookings);
+                    } else {
+                        console.error('Failed to load bookings:', result.error);
+                    }
+                } catch (error) {
+                    console.error('Failed to load bookings:', error);
+                }
+            }
+            
+            // Display bookings
+            function displayBookings(bookings) {
+                ticketsList.innerHTML = '';
+                bookingsMap.clear();
+                
+                if (bookings.length === 0) {
+                    ticketsList.style.display = 'none';
+                    filterPanel.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    pageTitle.textContent = 'У вас нет билетов';
+                    return;
+                }
+                
+                ticketsList.style.display = 'flex';
+                filterPanel.style.display = 'flex';
+                emptyState.style.display = 'none';
+                pageTitle.textContent = 'Ваши билеты';
+                
+                const now = new Date();
+                
+                bookings.forEach(booking => {
+                    const eventDate = new Date(booking.event.eventDate);
+                    const isPast = eventDate < now;
+                    
+                    // Сохраняем бронирование в Map
+                    bookingsMap.set(booking.bookingId, booking);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    
+                    // Создаем элементы безопасно
+                    const title = document.createElement('h3');
+                    title.className = 'item-title';
+                    title.textContent = booking.event.title;
+                    card.appendChild(title);
+                    
+                    const infoItems = [
+                        { label: 'Жанр:', value: booking.event.genre },
+                        { label: 'Место:', value: `${booking.event.venueName}, ${booking.event.venueCity}` },
+                        { label: 'Дата:', value: formatDate(booking.event.eventDate) },
+                        { label: 'Возраст:', value: booking.event.ageRestriction },
+                        { label: 'Категория:', value: booking.ticket.categoryName }
+                    ];
+                    
+                    if (booking.ticket.rowNumber) {
+                        infoItems.push({ label: 'Ряд/Место:', value: `${booking.ticket.rowNumber} / ${booking.ticket.seatNumber}` });
+                    }
+                    
+                    infoItems.forEach(item => {
+                        const p = document.createElement('p');
+                        p.className = 'item-info';
+                        const span = document.createElement('span');
+                        span.textContent = item.label;
+                        p.appendChild(span);
+                        p.appendChild(document.createTextNode(' ' + item.value));
+                        card.appendChild(p);
+                    });
+                    
+                    const viewBtn = document.createElement('button');
+                    viewBtn.className = 'item-btn';
+                    viewBtn.textContent = 'Посмотреть билет';
+                    viewBtn.addEventListener('click', () => viewTicket(booking.bookingId));
+                    card.appendChild(viewBtn);
+                    
+                    if (!isPast) {
+                        const refundBtn = document.createElement('button');
+                        refundBtn.className = 'refund-link';
+                        refundBtn.textContent = 'Вернуть билет';
+                        refundBtn.dataset.bookingId = booking.bookingId;
+                        refundBtn.addEventListener('click', () => {
+                            const bookingData = bookingsMap.get(booking.bookingId);
+                            if (bookingData) {
+                                openRefundModal(bookingData);
+                            }
+                        });
+                        card.appendChild(refundBtn);
+                    }
+                    
+                    ticketsList.appendChild(card);
+                });
+            }
+            
+            // Открытие модального окна возврата
+            function openRefundModal(booking) {
+                currentRefundBooking = booking;
+                
+                // Очищаем и создаем элементы безопасно
+                refundTicketInfo.innerHTML = '';
+                
+                const infoItems = [
+                    { label: 'Мероприятие:', value: booking.event.title },
+                    { label: 'Жанр:', value: booking.event.genre },
+                    { label: 'Место проведения:', value: `${booking.event.venueName}, ${booking.event.venueCity}` },
+                    { label: 'Дата:', value: formatDate(booking.event.eventDate) },
+                    { label: 'Возрастное ограничение:', value: booking.event.ageRestriction },
+                    { label: 'Категория билета:', value: booking.ticket.categoryName }
+                ];
+                
+                if (booking.ticket.rowNumber) {
+                    infoItems.push({ label: 'Ряд / Место:', value: `${booking.ticket.rowNumber} / ${booking.ticket.seatNumber}` });
+                }
+                
+                infoItems.push({ label: 'Цена:', value: `${booking.ticket.price} ₽` });
+                
+                infoItems.forEach(item => {
+                    const p = document.createElement('p');
+                    const span = document.createElement('span');
+                    span.textContent = item.label;
+                    p.appendChild(span);
+                    p.appendChild(document.createTextNode(' ' + item.value));
+                    refundTicketInfo.appendChild(p);
+                });
+                
+                refundModal.classList.add('active');
+            }
+            
+            // Закрытие модального окна
+            function closeRefundModal() {
+                refundModal.classList.remove('active');
+                currentRefundBooking = null;
+            }
+            
+            // Обработчик кнопки "Отмена"
+            refundCancelBtn.addEventListener('click', closeRefundModal);
+            
+            // Обработчик кнопки "Подтвердить"
+            refundConfirmBtn.addEventListener('click', async () => {
+                if (!currentRefundBooking) return;
+                
+                try {
+                    const result = await bookingsAPI.cancel(currentRefundBooking.bookingId);
+                    if (result.success) {
+                        closeRefundModal();
+                        await loadBookings(); // Перезагрузка списка билетов
+                    } else {
+                        alert(result.error || 'Ошибка при возврате билета');
+                    }
+                } catch (error) {
+                    alert('Ошибка при возврате билета');
+                    console.error(error);
+                }
+            });
+            
+            // Закрытие модального окна при клике вне его
+            refundModal.addEventListener('click', (e) => {
+                if (e.target === refundModal) {
+                    closeRefundModal();
+                }
+            });
+            
+            // Format date
+            function formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            
+            // View ticket
+            window.viewTicket = function(bookingId) {
+                window.location.href = `ticket-detail.html?id=${bookingId}`;
+            };
+            
+            // Apply filters
+            document.getElementById('applyFilters').addEventListener('click', () => {
+                const dateFrom = document.getElementById('dateFromFilter').value;
+                const dateTo = document.getElementById('dateToFilter').value;
+                
+                // Validate dates
+                if (dateFrom && dateTo) {
+                    const fromDate = new Date(dateFrom);
+                    const toDate = new Date(dateTo);
+                    if (fromDate > toDate) {
+                        alert('Дата "от" не может быть позже даты "до"');
+                        return;
+                    }
+                }
+                
+                const filters = {
+                    genre: document.getElementById('genreFilter').value,
+                    city: document.getElementById('cityFilter').value,
+                    dateFrom: dateFrom,
+                    dateTo: dateTo,
+                    venue: document.getElementById('venueFilter').value,
+                    ageRestriction: document.getElementById('ageFilter').value
+                };
+                loadBookings(filters);
+            });
+            
+            // Reset filters
+            document.getElementById('resetFilters').addEventListener('click', () => {
+                document.getElementById('genreFilter').value = '';
+                document.getElementById('cityFilter').value = '';
+                document.getElementById('dateFromFilter').value = '';
+                document.getElementById('dateToFilter').value = '';
+                document.getElementById('venueFilter').value = '';
+                document.getElementById('ageFilter').value = '';
+                loadBookings();
+            });
+            
+            // Go to events
+            goToEventsBtn.addEventListener('click', () => {
+                window.location.href = 'events.html';
+            });
+            
+            // Initialize
+            await loadFilterOptions();
+            await loadBookings();
+        });
+    </script>
+</body>
+</html>

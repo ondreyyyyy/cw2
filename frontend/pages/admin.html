@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - tickethub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Vollkorn:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="../index.html" class="logo">tickethub</a>
+            <div class="nav-links">
+                <a href="tickets.html" class="nav-link">Билеты</a>
+                <a href="events.html" class="nav-link">Мероприятия</a>
+                <a href="booking-info.html" class="nav-link">Бронирование</a>
+            </div>
+            <div class="auth-section">
+                <a href="login.html" class="login-btn" id="loginBtn">Войти</a>
+                <div class="user-section" id="userSection" style="display: none;">
+                    <span class="username" id="username"></span>
+                    <button class="logout-btn" id="logoutBtn">Выйти</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="step-indicator">
+            <h1 class="step-indicator-title">Админ-панель</h1>
+            <p class="step-indicator-subtitle">Управление мероприятиями</p>
+        </div>
+
+        <!-- Create Event Form -->
+        <div class="auth-form" id="createEventForm" style="max-width: 700px; margin: 2rem auto;">
+            <h2 style="color: white; margin-bottom: 1.5rem; font-family: 'Inter', sans-serif;">Создать мероприятие</h2>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventTitle">Название мероприятия</label>
+                <input type="text" class="form-input" id="eventTitle" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventGenre">Жанр</label>
+                <select class="filter-select" id="eventGenre" style="width: 100%;">
+                    <option value="Рок">Рок</option>
+                    <option value="Поп">Поп</option>
+                    <option value="Классика">Классика</option>
+                    <option value="Джаз">Джаз</option>
+                    <option value="Хип-хоп">Хип-хоп</option>
+                    <option value="Электронная">Электронная</option>
+                    <option value="Фольклор">Фольклор</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventCity">Город</label>
+                <select class="filter-select" id="eventCity" style="width: 100%;">
+                    <option value="">Выберите город</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventVenue">Площадка</label>
+                <select class="filter-select" id="eventVenue" style="width: 100%;">
+                    <option value="">Сначала выберите город</option>
+                </select>
+                <p id="venueCapacityInfo" style="color: #808080; font-size: 0.9rem; margin-top: 0.5rem; display: none;">
+                    Вместимость: <span id="venueCapacity">0</span> человек
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventDate">Дата и время</label>
+                <input type="datetime-local" class="form-input" id="eventDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventAge">Возрастное ограничение</label>
+                <select class="filter-select" id="eventAge" style="width: 100%;">
+                    <option value="0+">0+</option>
+                    <option value="12+">12+</option>
+                    <option value="16+">16+</option>
+                    <option value="18+">18+</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="eventDescription">Описание</label>
+                <textarea class="form-input" id="eventDescription" rows="4" style="resize: vertical;"></textarea>
+            </div>
+            
+            <!-- Categories -->
+            <div id="categoriesSection" style="display: none;">
+                <h3 style="color: white; margin-bottom: 1rem; font-family: 'Inter', sans-serif;">Категории билетов</h3>
+                <p style="color: #808080; font-size: 0.9rem; margin-bottom: 1rem;">Выберите категории и укажите количество билетов</p>
+                
+                <div id="categoriesList"></div>
+            </div>
+            
+            <div id="message" style="display: none; margin-bottom: 1rem; font-size: 0.9rem;"></div>
+            
+            <div style="display: flex; justify-content: center; margin-top: 1.5rem;">
+                <button type="button" class="submit-btn" id="createBtn" disabled>Создать мероприятие</button>
+            </div>
+        </div>
+        
+        <!-- Events List -->
+        <div style="max-width: 900px; margin: 2rem auto;">
+            <h2 style="color: white; margin-bottom: 1.5rem; font-family: 'Inter', sans-serif;">Существующие мероприятия</h2>
+            <div class="items-container" id="eventsList"></div>
+        </div>
+    </main>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            if (!requireAuth()) return;
+            
+            // Check if admin
+            const user = getCurrentUser();
+            if (!user || !user.isAdmin) {
+                alert('Доступ запрещен. Требуются права администратора.');
+                window.location.href = 'events.html';
+                return;
+            }
+            
+            const citySelect = document.getElementById('eventCity');
+            const venueSelect = document.getElementById('eventVenue');
+            const categoriesSection = document.getElementById('categoriesSection');
+            const categoriesList = document.getElementById('categoriesList');
+            const createBtn = document.getElementById('createBtn');
+            const messageDiv = document.getElementById('message');
+            const eventsList = document.getElementById('eventsList');
+            
+            let venueCategories = [];
+            let currentVenueCapacity = 0;
+            
+            // Function to escape HTML to prevent XSS
+            function escapeHtml(text) {
+                if (text === null || text === undefined) return '';
+                const div = document.createElement('div');
+                div.textContent = String(text);
+                return div.innerHTML;
+            }
+            
+            // Function to escape HTML attribute
+            function escapeAttr(text) {
+                if (text === null || text === undefined) return '';
+                return String(text).replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+            
+            // Load cities
+            async function loadCities() {
+                try {
+                    const result = await eventsAPI.getCities();
+                    if (result.success) {
+                        result.cities.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.textContent = city;
+                            citySelect.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to load cities:', error);
+                }
+            }
+            
+            // Load venues by city
+            async function loadVenues(city) {
+                venueSelect.innerHTML = '<option value="">Загрузка...</option>';
+                categoriesSection.style.display = 'none';
+                document.getElementById('venueCapacityInfo').style.display = 'none';
+                currentVenueCapacity = 0;
+                
+                try {
+                    const result = await adminAPI.getVenuesByCity(city);
+                    if (result.success) {
+                        venueSelect.innerHTML = '<option value="">Выберите площадку</option>';
+                        result.venues.forEach(venue => {
+                            venueSelect.innerHTML += `<option value="${venue.id}" data-capacity="${venue.capacity}">${venue.name}</option>`;
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to load venues:', error);
+                    venueSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                }
+            }
+            
+            // Load venue categories
+            async function loadVenueCategories(venueId) {
+                try {
+                    const result = await adminAPI.getVenueCategories(venueId);
+                    if (result.success) {
+                        venueCategories = result.categories;
+                        displayCategories(result.categories);
+                        categoriesSection.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Failed to load categories:', error);
+                }
+            }
+            
+            // Display categories for selection
+            function displayCategories(categories) {
+                categoriesList.innerHTML = '';
+                
+                categories.forEach((cat, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'filter-panel';
+                    div.style.marginBottom = '1rem';
+                    div.style.flexDirection = 'column';
+                    div.style.alignItems = 'flex-start';
+                    
+                    const hasSeats = cat.rowsCount > 0 && cat.seatsPerRow > 0;
+                    const maxSeats = hasSeats ? cat.rowsCount * cat.seatsPerRow : 1000;
+                    
+                    div.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 1rem; width: 100%; flex-wrap: wrap;">
+                            <label style="color: white; display: flex; align-items: center; gap: 0.5rem; min-width: 200px;">
+                                <input type="checkbox" class="category-checkbox" data-index="${index}" checked>
+                                ${cat.categoryName}
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="color: #808080; font-size: 0.9rem;">Цена:</span>
+                                <input type="number" class="form-input category-price" data-index="${index}" 
+                                       value="${cat.defaultPrice}" min="0" step="100" style="width: 120px;">
+                                <span style="color: #808080;">₽</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="color: #808080; font-size: 0.9rem;">Билетов:</span>
+                                <input type="number" class="form-input category-seats" data-index="${index}" 
+                                       value="${maxSeats}" min="1" max="${maxSeats}" style="width: 100px;">
+                            </div>
+                        </div>
+                    `;
+                    
+                    categoriesList.appendChild(div);
+                });
+                
+                updateCreateButton();
+            }
+            
+            // Update create button state
+            function updateCreateButton() {
+                const title = document.getElementById('eventTitle').value.trim();
+                const venue = venueSelect.value;
+                const date = document.getElementById('eventDate').value;
+                const checkedCategories = document.querySelectorAll('.category-checkbox:checked');
+                
+                createBtn.disabled = !title || !venue || !date || checkedCategories.length === 0;
+            }
+            
+            // Load events list
+            async function loadEvents() {
+                try {
+                    const result = await eventsAPI.getAll();
+                    if (result.success) {
+                        displayEvents(result.events);
+                    }
+                } catch (error) {
+                    console.error('Failed to load events:', error);
+                }
+            }
+            
+            // Display events
+            function displayEvents(events) {
+                eventsList.innerHTML = '';
+                
+                if (events.length === 0) {
+                    eventsList.innerHTML = '<p style="color: #808080; text-align: center;">Нет мероприятий</p>';
+                    return;
+                }
+                
+                events.forEach(event => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.innerHTML = `
+                        <h3 class="item-title">${event.title}</h3>
+                        <p class="item-info"><span>Жанр:</span> ${event.genre}</p>
+                        <p class="item-info"><span>Место:</span> ${event.venue.name}, ${event.venue.city}</p>
+                        <p class="item-info"><span>Дата:</span> ${formatDate(event.eventDate)}</p>
+                        <p class="item-info"><span>Возраст:</span> ${event.ageRestriction}</p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                            <button class="item-btn edit-btn" data-event-id="${event.id}" 
+                                    style="background-color: #008000;">Редактировать</button>
+                            <button class="item-btn delete-btn" data-event-id="${event.id}" 
+                                    style="background-color: #696969;">Удалить</button>
+                        </div>
+                    `;
+                    
+                    card.querySelector('.edit-btn').addEventListener('click', () => openEditModal(event.id));
+                    card.querySelector('.delete-btn').addEventListener('click', () => deleteEvent(event.id));
+                    eventsList.appendChild(card);
+                });
+            }
+            
+            // Open edit modal
+            async function openEditModal(eventId) {
+                try {
+                    const result = await adminAPI.getEvent(eventId);
+                    if (result.success) {
+                        showEditForm(result.event);
+                    } else {
+                        alert(result.error || 'Ошибка загрузки мероприятия');
+                    }
+                } catch (error) {
+                    console.error('Failed to load event:', error);
+                    alert('Ошибка загрузки данных мероприятия');
+                }
+            }
+            
+            // Show edit form
+            function showEditForm(event) {
+                // Создаём модальное окно для редактирования
+                const modal = document.createElement('div');
+                modal.id = 'editModal';
+                modal.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.8); display: flex; justify-content: center;
+                    align-items: center; z-index: 1000; padding: 2rem; overflow-y: auto;
+                `;
+                
+                let categoriesHtml = '';
+                event.categories.forEach(cat => {
+                    const soldSeats = cat.totalSeats - cat.availableSeats;
+                    categoriesHtml += `
+                        <div class="filter-panel" style="margin-bottom: 1rem; flex-direction: column; align-items: flex-start;">
+                            <div style="display: flex; align-items: center; gap: 1rem; width: 100%; flex-wrap: wrap;">
+                                <span style="color: white; min-width: 150px;">${cat.categoryName}</span>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="color: #808080; font-size: 0.9rem;">Цена:</span>
+                                    <input type="number" class="form-input edit-category-price" 
+                                           data-category-id="${cat.id}" value="${cat.price}" 
+                                           min="0" step="100" style="width: 120px;">
+                                    <span style="color: #808080;">₽</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="color: #808080; font-size: 0.9rem;">Всего билетов:</span>
+                                    <input type="number" class="form-input edit-category-seats" 
+                                           data-category-id="${cat.id}" value="${cat.totalSeats}" 
+                                           min="${soldSeats}" style="width: 100px;">
+                                </div>
+                                <span style="color: #808080; font-size: 0.8rem;">Продано: ${soldSeats}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                modal.innerHTML = `
+                    <div style="background: #1a1a1a; padding: 2rem; border-radius: 12px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto;">
+                        <h2 style="color: white; margin-bottom: 1.5rem; font-family: 'Inter', sans-serif;">Редактировать мероприятие</h2>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="editTitle">Название</label>
+                            <input type="text" class="form-input" id="editTitle" value="${escapeAttr(event.title)}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="editGenre">Жанр</label>
+                            <select class="filter-select" id="editGenre" style="width: 100%;">
+                                <option value="Рок" ${event.genre === 'Рок' ? 'selected' : ''}>Рок</option>
+                                <option value="Поп" ${event.genre === 'Поп' ? 'selected' : ''}>Поп</option>
+                                <option value="Классика" ${event.genre === 'Классика' ? 'selected' : ''}>Классика</option>
+                                <option value="Джаз" ${event.genre === 'Джаз' ? 'selected' : ''}>Джаз</option>
+                                <option value="Хип-хоп" ${event.genre === 'Хип-хоп' ? 'selected' : ''}>Хип-хоп</option>
+                                <option value="Электронная" ${event.genre === 'Электронная' ? 'selected' : ''}>Электронная</option>
+                                <option value="Фольклор" ${event.genre === 'Фольклор' ? 'selected' : ''}>Фольклор</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Площадка</label>
+                            <p style="color: #808080;">${escapeHtml(event.venueName)}, ${escapeHtml(event.venueCity)}</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="editDate">Дата и время</label>
+                            <input type="datetime-local" class="form-input" id="editDate" value="${event.eventDate.slice(0,16)}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="editAge">Возрастное ограничение</label>
+                            <select class="filter-select" id="editAge" style="width: 100%;">
+                                <option value="0+" ${event.ageRestriction === '0+' ? 'selected' : ''}>0+</option>
+                                <option value="12+" ${event.ageRestriction === '12+' ? 'selected' : ''}>12+</option>
+                                <option value="16+" ${event.ageRestriction === '16+' ? 'selected' : ''}>16+</option>
+                                <option value="18+" ${event.ageRestriction === '18+' ? 'selected' : ''}>18+</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="editDescription">Описание</label>
+                            <textarea class="form-input" id="editDescription" rows="4" style="resize: vertical;">${escapeHtml(event.description || '')}</textarea>
+                        </div>
+                        
+                        <h3 style="color: white; margin-bottom: 1rem; font-family: 'Inter', sans-serif;">Категории билетов</h3>
+                        <div id="editCategoriesList">${categoriesHtml}</div>
+                        
+                        <div id="editMessage" style="display: none; margin-bottom: 1rem; font-size: 0.9rem;"></div>
+                        
+                        <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem;">
+                            <button type="button" class="submit-btn" id="saveEditBtn" data-event-id="${escapeAttr(event.id)}">Сохранить</button>
+                            <button type="button" class="submit-btn" id="cancelEditBtn" style="background-color: #696969;">Отмена</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Event listeners
+                document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                    modal.remove();
+                });
+                
+                document.getElementById('saveEditBtn').addEventListener('click', async () => {
+                    const saveBtn = document.getElementById('saveEditBtn');
+                    const eventId = parseInt(saveBtn.dataset.eventId);
+                    
+                    const title = document.getElementById('editTitle').value.trim();
+                    const genre = document.getElementById('editGenre').value;
+                    const eventDate = document.getElementById('editDate').value;
+                    const ageRestriction = document.getElementById('editAge').value;
+                    const description = document.getElementById('editDescription').value.trim();
+                    
+                    // Collect categories
+                    const categories = [];
+                    document.querySelectorAll('.edit-category-price').forEach(priceInput => {
+                        const categoryId = parseInt(priceInput.dataset.categoryId);
+                        const seatsInput = document.querySelector(`.edit-category-seats[data-category-id="${categoryId}"]`);
+                        
+                        categories.push({
+                            categoryId,
+                            price: parseFloat(priceInput.value),
+                            totalSeats: parseInt(seatsInput.value)
+                        });
+                    });
+                    
+                    saveBtn.disabled = true;
+                    saveBtn.textContent = 'Сохранение...';
+                    
+                    try {
+                        const result = await adminAPI.updateEvent({
+                            eventId,
+                            title,
+                            genre,
+                            eventDate,
+                            ageRestriction,
+                            description,
+                            categories
+                        });
+                        
+                        if (result.success) {
+                            modal.remove();
+                            loadEvents();
+                        } else {
+                            const msgDiv = document.getElementById('editMessage');
+                            msgDiv.textContent = result.error || 'Ошибка сохранения';
+                            msgDiv.style.color = '#800000';
+                            msgDiv.style.display = 'block';
+                        }
+                    } catch (error) {
+                        const msgDiv = document.getElementById('editMessage');
+                        msgDiv.textContent = 'Ошибка соединения с сервером';
+                        msgDiv.style.color = '#800000';
+                        msgDiv.style.display = 'block';
+                    }
+                    
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Сохранить';
+                });
+                
+                // Close on click outside
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                });
+            }
+            
+            // Delete event
+            async function deleteEvent(eventId) {
+                if (!confirm('Вы уверены, что хотите удалить это мероприятие?')) return;
+                
+                try {
+                    const result = await adminAPI.deleteEvent(eventId);
+                    if (result.success) {
+                        loadEvents();
+                    } else {
+                        alert(result.error || 'Ошибка удаления');
+                    }
+                } catch (error) {
+                    console.error('Failed to delete event:', error);
+                    alert('Ошибка удаления мероприятия');
+                }
+            }
+            
+            // Format date
+            function formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            
+            // Event listeners
+            citySelect.addEventListener('change', () => {
+                const city = citySelect.value;
+                if (city) {
+                    loadVenues(city);
+                } else {
+                    venueSelect.innerHTML = '<option value="">Сначала выберите город</option>';
+                    categoriesSection.style.display = 'none';
+                }
+                updateCreateButton();
+            });
+            
+            venueSelect.addEventListener('change', () => {
+                const venueId = venueSelect.value;
+                const selectedOption = venueSelect.options[venueSelect.selectedIndex];
+                
+                if (venueId) {
+                    currentVenueCapacity = parseInt(selectedOption.dataset.capacity) || 0;
+                    document.getElementById('venueCapacity').textContent = currentVenueCapacity;
+                    document.getElementById('venueCapacityInfo').style.display = 'block';
+                    loadVenueCategories(parseInt(venueId));
+                } else {
+                    currentVenueCapacity = 0;
+                    document.getElementById('venueCapacityInfo').style.display = 'none';
+                    categoriesSection.style.display = 'none';
+                }
+                updateCreateButton();
+            });
+            
+            document.getElementById('eventTitle').addEventListener('input', updateCreateButton);
+            document.getElementById('eventDate').addEventListener('input', updateCreateButton);
+            
+            categoriesList.addEventListener('change', updateCreateButton);
+            
+            // Create event
+            createBtn.addEventListener('click', async () => {
+                const title = document.getElementById('eventTitle').value.trim();
+                const genre = document.getElementById('eventGenre').value;
+                const venueId = parseInt(venueSelect.value);
+                const eventDate = document.getElementById('eventDate').value;
+                const ageRestriction = document.getElementById('eventAge').value;
+                const description = document.getElementById('eventDescription').value.trim();
+                
+                // Collect categories
+                const categories = [];
+                document.querySelectorAll('.category-checkbox:checked').forEach(checkbox => {
+                    const index = parseInt(checkbox.dataset.index);
+                    const cat = venueCategories[index];
+                    const priceInput = document.querySelector(`.category-price[data-index="${index}"]`);
+                    const seatsInput = document.querySelector(`.category-seats[data-index="${index}"]`);
+                    
+                    categories.push({
+                        categoryName: cat.categoryName,
+                        price: parseFloat(priceInput.value),
+                        totalSeats: parseInt(seatsInput.value),
+                        rowsCount: cat.rowsCount || 0,
+                        seatsPerRow: cat.seatsPerRow || 0
+                    });
+                });
+                
+                if (categories.length === 0) {
+                    messageDiv.textContent = 'Выберите хотя бы одну категорию билетов';
+                    messageDiv.style.color = '#800000';
+                    messageDiv.style.display = 'block';
+                    return;
+                }
+                
+                // Проверка вместимости
+                const totalTickets = categories.reduce((sum, cat) => sum + cat.totalSeats, 0);
+                if (totalTickets > currentVenueCapacity) {
+                    messageDiv.textContent = 'Количество продаваемых билетов больше вместимости места проведения мероприятия';
+                    messageDiv.style.color = '#800000';
+                    messageDiv.style.display = 'block';
+                    return;
+                }
+                
+                createBtn.disabled = true;
+                createBtn.textContent = 'Создание...';
+                
+                try {
+                    const result = await adminAPI.createEvent({
+                        title,
+                        genre,
+                        venueId,
+                        eventDate,
+                        ageRestriction,
+                        description,
+                        categories
+                    });
+                    
+                    if (result.success) {
+                        messageDiv.textContent = 'Мероприятие успешно создано';
+                        messageDiv.style.color = '#008000';
+                        messageDiv.style.display = 'block';
+                        
+                        // Reset form
+                        document.getElementById('eventTitle').value = '';
+                        document.getElementById('eventDescription').value = '';
+                        document.getElementById('eventDate').value = '';
+                        
+                        loadEvents();
+                    } else {
+                        messageDiv.textContent = result.error || 'Ошибка создания мероприятия';
+                        messageDiv.style.color = '#800000';
+                        messageDiv.style.display = 'block';
+                    }
+                } catch (error) {
+                    messageDiv.textContent = 'Ошибка соединения с сервером';
+                    messageDiv.style.color = '#800000';
+                    messageDiv.style.display = 'block';
+                }
+                
+                createBtn.disabled = false;
+                createBtn.textContent = 'Создать мероприятие';
+                updateCreateButton();
+            });
+            
+            // Initialize
+            await loadCities();
+            await loadEvents();
+        });
+    </script>
+</body>
+</html>

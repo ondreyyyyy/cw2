@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tickethub - Бронирование билетов на концерты</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Vollkorn:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">tickethub</a>
+            <div class="nav-links">
+                <a href="pages/tickets.html" class="nav-link">Билеты</a>
+                <a href="pages/events.html" class="nav-link">Мероприятия</a>
+                <a href="pages/booking-info.html" class="nav-link">Бронирование</a>
+            </div>
+            <div class="auth-section">
+                <a href="pages/login.html" class="login-btn" id="loginBtn">Войти</a>
+                <div class="user-section" id="userSection" style="display: none;">
+                    <span class="username" id="username"></span>
+                    <button class="logout-btn" id="logoutBtn">Выйти</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <section class="hero">
+            <h1 class="hero-title">
+                Инструмент для простого и удобного<br>
+                бронирования и фильтрации билетов на любимые концерты
+            </h1>
+            <p class="hero-subtitle">Все, что нужно – в едином сервисе</p>
+            <button class="start-btn" id="startBtn">Начать бронирование</button>
+        </section>
+
+        <section class="steps">
+            <div class="step-card">
+                <div class="step-number">
+                    <span>01</span>
+                </div>
+                <div class="step-illustration login-illustration">
+                    <!-- Улучшенная иллюстрация формы входа -->
+                    <div class="mock-login-form">
+                        <div class="mock-avatar">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                <circle cx="20" cy="14" r="8" stroke="#ffffff" stroke-width="2" fill="none"/>
+                                <path d="M6 36c0-8 6-14 14-14s14 6 14 14" stroke="#ffffff" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <div class="mock-input"></div>
+                        <div class="mock-input password-input">
+                            <div class="mock-dots"></div>
+                        </div>
+                        <div class="mock-button"></div>
+                    </div>
+                </div>
+                <p class="step-description">Для начала работы войдите или зарегистрируйтесь в системе</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">
+                    <span>02</span>
+                </div>
+                <div class="step-illustration list-illustration">
+                    <!-- Улучшенная иллюстрация списка мероприятий -->
+                    <div class="mock-events-list">
+                        <div class="mock-event-item">
+                            <div class="mock-event-icon">♪</div>
+                            <div class="mock-event-details">
+                                <div class="mock-event-line"></div>
+                                <div class="mock-event-line short"></div>
+                            </div>
+                        </div>
+                        <div class="mock-event-item">
+                            <div class="mock-event-icon">♫</div>
+                            <div class="mock-event-details">
+                                <div class="mock-event-line"></div>
+                                <div class="mock-event-line short"></div>
+                            </div>
+                        </div>
+                        <div class="mock-event-item active">
+                            <div class="mock-event-icon">★</div>
+                            <div class="mock-event-details">
+                                <div class="mock-event-line"></div>
+                                <div class="mock-event-line short"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="step-description">Выберите подходящее мероприятие</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">
+                    <span>03</span>
+                </div>
+                <div class="step-illustration ticket-illustration">
+                    <!-- Улучшенная иллюстрация билета -->
+                    <div class="mock-ticket-card">
+                        <div class="mock-ticket-header">
+                            <span class="mock-ticket-logo">TH</span>
+                            <span class="mock-ticket-type">БИЛЕТ</span>
+                        </div>
+                        <div class="mock-ticket-body">
+                            <div class="mock-ticket-row">
+                                <div class="mock-ticket-label"></div>
+                                <div class="mock-ticket-value"></div>
+                            </div>
+                            <div class="mock-ticket-row">
+                                <div class="mock-ticket-label short"></div>
+                                <div class="mock-ticket-value"></div>
+                            </div>
+                            <div class="mock-ticket-barcode">
+                                <div class="bar"></div>
+                                <div class="bar thin"></div>
+                                <div class="bar"></div>
+                                <div class="bar thin"></div>
+                                <div class="bar"></div>
+                                <div class="bar thin"></div>
+                                <div class="bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="step-description">Забронируйте билет на желаемое мероприятие</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

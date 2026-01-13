@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали билета - tickethub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Vollkorn:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="../index.html" class="logo">tickethub</a>
+            <div class="nav-links">
+                <a href="tickets.html" class="nav-link">Билеты</a>
+                <a href="events.html" class="nav-link">Мероприятия</a>
+                <a href="booking-info.html" class="nav-link">Бронирование</a>
+            </div>
+            <div class="auth-section">
+                <a href="login.html" class="login-btn" id="loginBtn">Войти</a>
+                <div class="user-section" id="userSection" style="display: none;">
+                    <span class="username" id="username"></span>
+                    <button class="logout-btn" id="logoutBtn">Выйти</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Модальное окно возврата билета -->
+    <div class="refund-modal" id="refundModal">
+        <div class="refund-modal-content">
+            <h2 class="refund-modal-title">Вы уверены, что хотите вернуть билет на данное мероприятие?</h2>
+            <div class="refund-ticket-info" id="refundTicketInfo">
+                <!-- Информация о билете будет загружена сюда -->
+            </div>
+            <div class="refund-modal-buttons">
+                <button class="refund-confirm-btn" id="refundConfirmBtn">Подтвердить</button>
+                <button class="refund-cancel-btn" id="refundCancelBtn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="ticket-detail-container">
+            <h1 class="ticket-detail-title" id="eventTitle">Загрузка...</h1>
+            
+            <div class="ticket-info-container" id="ticketInfo">
+                <!-- Ticket info will be loaded here -->
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="refund-text-btn" id="cancelBtn" style="display: none;">Вернуть билет</button>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="back-btn" onclick="window.location.href='tickets.html'">← Вернуться к билетам</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            if (!requireAuth()) return;
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookingId = urlParams.get('id');
+            
+            if (!bookingId) {
+                window.location.href = 'tickets.html';
+                return;
+            }
+            
+            const eventTitle = document.getElementById('eventTitle');
+            const ticketInfo = document.getElementById('ticketInfo');
+            const cancelBtn = document.getElementById('cancelBtn');
+            
+            // Модальное окно
+            const refundModal = document.getElementById('refundModal');
+            const refundTicketInfo = document.getElementById('refundTicketInfo');
+            const refundConfirmBtn = document.getElementById('refundConfirmBtn');
+            const refundCancelBtn = document.getElementById('refundCancelBtn');
+            let currentBooking = null;
+            
+            // Function to escape HTML to prevent XSS
+            function escapeHtml(text) {
+                if (text === null || text === undefined) return '';
+                const div = document.createElement('div');
+                div.textContent = String(text);
+                return div.innerHTML;
+            }
+            
+            try {
+                const result = await bookingsAPI.getById(bookingId);
+                
+                if (result.success) {
+                    const booking = result.booking;
+                    currentBooking = booking;
+                    const eventDate = new Date(booking.event.eventDate);
+                    const now = new Date();
+                    const isPast = eventDate < now;
+                    
+                    eventTitle.textContent = booking.event.title;
+                    
+                    ticketInfo.innerHTML = `
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">Жанр</span>
+                            <span class="ticket-info-value">${escapeHtml(booking.event.genre)}</span>
+                        </div>
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">Категория билета</span>
+                            <span class="ticket-info-value">${escapeHtml(booking.ticket.categoryName)}</span>
+                        </div>
+                        ${booking.ticket.rowNumber ? `
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">Ряд / Место</span>
+                            <span class="ticket-info-value">${escapeHtml(booking.ticket.rowNumber)} / ${escapeHtml(booking.ticket.seatNumber)}</span>
+                        </div>
+                        ` : ''}
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">Место проведения</span>
+                            <span class="ticket-info-value">${escapeHtml(booking.event.venueName)}</span>
+                        </div>
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">Адрес</span>
+                            <span class="ticket-info-value">${escapeHtml(booking.event.venueAddress || booking.event.venueCity)}</span>
+                        </div>
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">Дата проведения</span>
+                            <span class="ticket-info-value">${formatDate(booking.event.eventDate)}</span>
+                        </div>
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">Возрастное ограничение</span>
+                            <span class="ticket-info-value">${escapeHtml(booking.event.ageRestriction)}</span>
+                        </div>
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">Цена</span>
+                            <span class="ticket-info-value">${escapeHtml(booking.ticket.price)} ₽</span>
+                        </div>
+                    `;
+                    
+                    // Show cancel button only for future events
+                    if (!isPast) {
+                        cancelBtn.style.display = 'block';
+                        cancelBtn.addEventListener('click', () => {
+                            openRefundModal(booking);
+                        });
+                    }
+                } else {
+                    eventTitle.textContent = 'Билет не найден';
+                }
+            } catch (error) {
+                console.error('Failed to load booking:', error);
+                eventTitle.textContent = 'Ошибка загрузки';
+            }
+            
+            // Открытие модального окна возврата
+            function openRefundModal(booking) {
+                // Очищаем и создаем элементы безопасно
+                refundTicketInfo.innerHTML = '';
+                
+                const infoItems = [
+                    { label: 'Мероприятие:', value: booking.event.title },
+                    { label: 'Жанр:', value: booking.event.genre },
+                    { label: 'Место проведения:', value: booking.event.venueName },
+                    { label: 'Дата:', value: formatDate(booking.event.eventDate) },
+                    { label: 'Возрастное ограничение:', value: booking.event.ageRestriction },
+                    { label: 'Категория билета:', value: booking.ticket.categoryName }
+                ];
+                
+                if (booking.ticket.rowNumber) {
+                    infoItems.push({ label: 'Ряд / Место:', value: `${booking.ticket.rowNumber} / ${booking.ticket.seatNumber}` });
+                }
+                
+                infoItems.push({ label: 'Цена:', value: `${booking.ticket.price} ₽` });
+                
+                infoItems.forEach(item => {
+                    const p = document.createElement('p');
+                    const span = document.createElement('span');
+                    span.textContent = item.label;
+                    p.appendChild(span);
+                    p.appendChild(document.createTextNode(' ' + item.value));
+                    refundTicketInfo.appendChild(p);
+                });
+                
+                refundModal.classList.add('active');
+            }
+            
+            // Закрытие модального окна
+            function closeRefundModal() {
+                refundModal.classList.remove('active');
+            }
+            
+            // Обработчик кнопки "Отмена"
+            refundCancelBtn.addEventListener('click', closeRefundModal);
+            
+            // Обработчик кнопки "Подтвердить"
+            refundConfirmBtn.addEventListener('click', async () => {
+                if (!currentBooking) return;
+                
+                try {
+                    const result = await bookingsAPI.cancel(bookingId);
+                    if (result.success) {
+                        window.location.href = 'tickets.html';
+                    } else {
+                        alert(result.error || 'Ошибка при возврате билета');
+                    }
+                } catch (error) {
+                    alert('Ошибка при возврате билета');
+                    console.error(error);
+                }
+            });
+            
+            // Закрытие модального окна при клике вне его
+            refundModal.addEventListener('click', (e) => {
+                if (e.target === refundModal) {
+                    closeRefundModal();
+                }
+            });
+            
+            function formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1141 @@
+/* Base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #000000;
+    color: #ffffff;
+    min-height: 100vh;
+    background-image: 
+        radial-gradient(ellipse at top left, rgba(0, 128, 0, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(0, 128, 0, 0.05) 0%, transparent 50%);
+}
+
+/* Typography */
+.logo {
+    font-family: 'Vollkorn', serif;
+    font-weight: 700;
+    color: #008000;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: text-shadow 0.3s;
+}
+
+.logo:hover {
+    text-shadow: 0 0 10px rgba(0, 128, 0, 0.5);
+}
+
+/* Header */
+.header {
+    padding: 1rem 2rem;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: opacity 0.3s;
+}
+
+.nav-link:hover {
+    opacity: 0.8;
+}
+
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.login-btn {
+    background-color: #808080;
+    color: #ffffff;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.login-btn:hover {
+    background-color: #6a6a6a;
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.username {
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.logout-btn {
+    background-color: #696969;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #5a5a5a;
+}
+
+/* Main content */
+.main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Hero section */
+.hero {
+    text-align: center;
+    padding: 2rem 0 3rem;
+}
+
+.hero-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1.8rem;
+    line-height: 1.3;
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    color: #808080;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
+
+.start-btn {
+    background-color: #008000;
+    color: #ffffff;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.start-btn:hover {
+    background-color: #006600;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 128, 0, 0.4);
+}
+
+/* Steps section */
+.steps {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+}
+
+.step-card {
+    background-color: transparent;
+    border: 2px solid #008000;
+    border-radius: 16px;
+    padding: 1.5rem;
+    width: 280px;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 128, 0, 0.2);
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #008000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.step-number span {
+    color: #008000;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.step-illustration {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Login illustration - улучшенная версия */
+.mock-login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.mock-avatar {
+    margin-bottom: 10px;
+}
+
+.login-illustration .mock-input {
+    width: 140px;
+    height: 24px;
+    background-color: transparent;
+    border: 2px solid #ffffff;
+    border-radius: 6px;
+}
+
+.login-illustration .mock-input.password-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+}
+
+.mock-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.mock-dots::before {
+    content: '• • • • •';
+    color: #ffffff;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+.login-illustration .mock-button {
+    width: 80px;
+    height: 22px;
+    background-color: #ffffff;
+    border-radius: 6px;
+    margin-top: 5px;
+}
+
+/* List illustration - улучшенная версия */
+.mock-events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 160px;
+}
+
+.mock-event-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: transparent;
+    border: 2px solid #ffffff;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.mock-event-item.active {
+    border-color: #008000;
+    background-color: rgba(0, 128, 0, 0.1);
+}
+
+.mock-event-icon {
+    font-size: 18px;
+    color: #ffffff;
+}
+
+.mock-event-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mock-event-line {
+    height: 6px;
+    background-color: #ffffff;
+    border-radius: 3px;
+}
+
+.mock-event-line.short {
+    width: 60%;
+}
+
+/* Ticket illustration - улучшенная версия */
+.mock-ticket-card {
+    width: 160px;
+    background-color: transparent;
+    border: 2px solid #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.mock-ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 2px dashed #ffffff;
+}
+
+.mock-ticket-logo {
+    color: #008000;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.mock-ticket-type {
+    color: #ffffff;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.mock-ticket-body {
+    padding: 12px;
+}
+
+.mock-ticket-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.mock-ticket-label {
+    width: 40%;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+}
+
+.mock-ticket-label.short {
+    width: 25%;
+}
+
+.mock-ticket-value {
+    flex: 1;
+    height: 6px;
+    background-color: #ffffff;
+    border-radius: 3px;
+}
+
+.mock-ticket-barcode {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.mock-ticket-barcode .bar {
+    width: 4px;
+    height: 25px;
+    background-color: #ffffff;
+}
+
+.mock-ticket-barcode .bar.thin {
+    width: 2px;
+}
+
+.step-description {
+    color: #808080;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Auth pages */
+.auth-container {
+    min-height: calc(100vh - 100px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-form {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.auth-logo {
+    font-family: 'Vollkorn', serif;
+    font-weight: 700;
+    color: #008000;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+    display: block;
+}
+
+.auth-title {
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.form-label {
+    display: block;
+    color: #ffffff;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #333333;
+    border: 1px solid #555555;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #008000;
+}
+
+.password-requirements {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.requirement {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.requirement-icon {
+    font-size: 0.9rem;
+}
+
+.requirement-icon.valid {
+    color: #008000;
+}
+
+.requirement-icon.invalid {
+    color: #800000;
+}
+
+.requirement-text {
+    color: #ffffff;
+}
+
+.error-text {
+    color: #800000;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.submit-btn {
+    background-color: #008000;
+    color: #ffffff;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #006600;
+}
+
+.submit-btn:disabled {
+    background-color: #444444;
+    cursor: not-allowed;
+}
+
+.forgot-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+.auth-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.auth-footer-text {
+    color: #696969;
+    font-size: 0.9rem;
+}
+
+.auth-footer-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.auth-footer-link:hover {
+    text-decoration: underline;
+}
+
+/* Booking info page */
+.page-title {
+    font-family: 'Vollkorn', serif;
+    font-weight: 700;
+    font-size: 2rem;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.info-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto 2rem;
+}
+
+.info-step {
+    background-color: transparent;
+    border: 2px solid #008000;
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.info-step:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 20px rgba(0, 128, 0, 0.2);
+}
+
+.info-step .step-number {
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+.info-step-text {
+    color: #ffffff;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.center-btn {
+    display: block;
+    margin: 2rem auto 0;
+}
+
+/* Tickets and Events pages */
+.page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.page-header-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1.5rem;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.page-header-subtitle {
+    font-size: 0.9rem;
+    color: #ffffff;
+}
+
+.filter-panel {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-label {
+    display: block;
+    color: #ffffff;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.filter-select,
+.filter-input {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: #333333;
+    border: 1px solid #555555;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: #008000;
+}
+
+.filter-btn {
+    background-color: #008000;
+    color: #ffffff;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.filter-btn:hover {
+    background-color: #006600;
+}
+
+.reset-filter-btn {
+    background-color: #696969;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.reset-filter-btn:hover {
+    background-color: #5a5a5a;
+}
+
+/* Items grid */
+.items-container {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 1rem 0;
+}
+
+.item-card {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-width: 280px;
+    flex-shrink: 0;
+}
+
+.item-title {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+.item-info {
+    color: #ffffff;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.item-info span {
+    color: #808080;
+}
+
+.item-btn {
+    background-color: #008000;
+    color: #ffffff;
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s;
+}
+
+.item-btn:hover {
+    background-color: #006600;
+}
+
+.cancel-btn {
+    background-color: #696969;
+}
+
+.cancel-btn:hover {
+    background-color: #5a5a5a;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+}
+
+.empty-state-text {
+    color: #ffffff;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Booking steps */
+.step-indicator {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.step-indicator-title {
+    font-size: 2rem;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.step-indicator-subtitle {
+    font-size: 1rem;
+    color: #ffffff;
+}
+
+/* Categories */
+.categories-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.category-btn {
+    background-color: #333333;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #555555;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.category-btn:hover,
+.category-btn.active {
+    border-color: #008000;
+    background-color: #1a1a1a;
+}
+
+/* Seat map */
+.seat-map-container {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.seat-map-title {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.stage {
+    background-color: #333333;
+    color: #808080;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.seats-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.seat-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.row-label {
+    color: #808080;
+    font-size: 0.8rem;
+    width: 30px;
+    text-align: right;
+}
+
+.seat {
+    width: 30px;
+    height: 30px;
+    background-color: #008000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    color: #ffffff;
+    transition: all 0.3s;
+}
+
+.seat:hover {
+    background-color: #006600;
+    transform: scale(1.1);
+}
+
+.seat.unavailable {
+    background-color: #333333;
+    cursor: not-allowed;
+}
+
+.seat.selected {
+    background-color: #ffcc00;
+    color: #000000;
+}
+
+.seat-legend {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend-color.available {
+    background-color: #008000;
+}
+
+.legend-color.unavailable {
+    background-color: #333333;
+}
+
+.legend-color.selected {
+    background-color: #ffcc00;
+}
+
+.legend-text {
+    color: #808080;
+    font-size: 0.8rem;
+}
+
+/* Ticket info */
+.ticket-info-container {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.ticket-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #333333;
+}
+
+.ticket-info-row:last-child {
+    border-bottom: none;
+}
+
+.ticket-info-label {
+    color: #808080;
+    font-size: 0.9rem;
+}
+
+.ticket-info-value {
+    color: #ffffff;
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+/* Navigation buttons */
+.nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #696969;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.back-btn:hover {
+    color: #ffffff;
+}
+
+/* Success page */
+.success-container {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.success-icon {
+    font-size: 5rem;
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+}
+
+.success-text {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Ticket details page */
+.ticket-detail-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.ticket-detail-title {
+    color: #ffffff;
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .nav-links {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .hero-title {
+        font-size: 1.4rem;
+    }
+    
+    .steps {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .step-card {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .info-step {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .filter-panel {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .items-container {
+        flex-direction: column;
+    }
+    
+    .item-card {
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+/* Модальное окно возврата билета */
+.refund-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.refund-modal.active {
+    display: flex;
+}
+
+.refund-modal-content {
+    background-color: #1a1a1a;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+}
+
+.refund-modal-title {
+    color: #ffffff;
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.refund-ticket-info {
+    background-color: #2a2a2a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.refund-ticket-info p {
+    color: #ffffff;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.refund-ticket-info p span {
+    color: #808080;
+}
+
+.refund-modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.refund-confirm-btn {
+    background-color: #008000;
+    color: #ffffff;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.refund-confirm-btn:hover {
+    background-color: #006600;
+}
+
+.refund-cancel-btn {
+    background-color: #696969;
+    color: #ffffff;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.refund-cancel-btn:hover {
+    background-color: #5a5a5a;
+}
+
+/* Кнопка вернуть билет (белый текст) */
+.refund-link {
+    color: #ffffff;
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    text-decoration: underline;
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
+.refund-link:hover {
+    color: #cccccc;
+}
+
+.refund-text-btn {
+    color: #ffffff;
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0.5rem 1rem;
+}
+
+.refund-text-btn:hover {
+    color: #cccccc;
+}

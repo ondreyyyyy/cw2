@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - tickethub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Vollkorn:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="auth-container">
+        <form class="auth-form" id="loginForm">
+            <a href="../index.html" class="auth-logo">tickethub</a>
+            <h1 class="auth-title">Вход</h1>
+            
+            <div class="form-group">
+                <label class="form-label" for="login">Логин</label>
+                <input type="text" class="form-input" id="login" name="login" maxlength="15" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">Пароль</label>
+                <input type="password" class="form-input" id="password" name="password" maxlength="15" required>
+            </div>
+            
+            <div id="errorMessage" class="error-text" style="display: none; margin-bottom: 1rem;"></div>
+            
+            <div class="form-actions">
+                <button type="submit" class="submit-btn" id="submitBtn">Войти</button>
+                <a href="forgot-password.html" class="forgot-link">Забыли пароль?</a>
+            </div>
+            
+            <div class="auth-footer">
+                <span class="auth-footer-text">У меня нет аккаунта.</span>
+                <a href="register.html" class="auth-footer-link">Зарегистрироваться</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Redirect if already logged in
+            if (isAuthenticated()) {
+                window.location.href = '/pages/events.html';
+                return;
+            }
+            
+            const form = document.getElementById('loginForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const loginInput = document.getElementById('login');
+            const passwordInput = document.getElementById('password');
+            
+            // Login validation - only Latin letters and Arabic numerals
+            function validateLogin(login) {
+                const loginRegex = /^[a-zA-Z0-9]+$/;
+                return loginRegex.test(login) && login.length > 0;
+            }
+            
+            // Filter login input to only allow valid characters
+            loginInput.addEventListener('input', () => {
+                const filteredValue = loginInput.value.replace(/[^a-zA-Z0-9]/g, '');
+                if (filteredValue !== loginInput.value) {
+                    loginInput.value = filteredValue;
+                }
+                updateSubmitButton();
+            });
+            
+            // Validation function
+            function validateForm() {
+                const login = loginInput.value.trim();
+                const password = passwordInput.value;
+                
+                return validateLogin(login) && password.length > 0;
+            }
+            
+            // Update submit button state
+            function updateSubmitButton() {
+                submitBtn.disabled = !validateForm();
+            }
+            
+            passwordInput.addEventListener('input', updateSubmitButton);
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!validateForm()) return;
+                
+                const login = loginInput.value.trim();
+                const password = passwordInput.value;
+                
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Вход...';
+                errorMessage.style.display = 'none';
+                
+                try {
+                    const result = await authAPI.login(login, password);
+                    
+                    if (result && result.success) {
+                        setAuthToken(result.token);
+                        setCurrentUser(result.user);
+                        window.location.href = '/pages/events.html';
+                    } else {
+                        errorMessage.textContent = result?.error || 'Ошибка входа';
+                        errorMessage.style.display = 'block';
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Войти';
+                    }
+                } catch (error) {
+                    errorMessage.textContent = 'Ошибка соединения с сервером';
+                    errorMessage.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Войти';
+                }
+            });
+            
+            updateSubmitButton();
+        });
+    </script>
+</body>
+</html>

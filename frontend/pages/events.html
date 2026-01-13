@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мероприятия - tickethub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Vollkorn:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="../index.html" class="logo">tickethub</a>
+            <div class="nav-links">
+                <a href="tickets.html" class="nav-link">Билеты</a>
+                <a href="events.html" class="nav-link">Мероприятия</a>
+                <a href="booking-info.html" class="nav-link">Бронирование</a>
+            </div>
+            <div class="auth-section">
+                <a href="login.html" class="login-btn" id="loginBtn">Войти</a>
+                <div class="user-section" id="userSection" style="display: none;">
+                    <span class="username" id="username"></span>
+                    <button class="logout-btn" id="logoutBtn">Выйти</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Step 1: Select Event -->
+        <div id="step1" class="booking-step">
+            <div class="step-indicator">
+                <h1 class="step-indicator-title">Шаг 1</h1>
+                <p class="step-indicator-subtitle">Выберите мероприятие</p>
+            </div>
+            
+            <!-- Filter Panel -->
+            <div class="filter-panel">
+                <div class="filter-group">
+                    <label class="filter-label">Жанр</label>
+                    <select class="filter-select" id="genreFilter">
+                        <option value="">Все жанры</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Город</label>
+                    <select class="filter-select" id="cityFilter">
+                        <option value="">Все города</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Дата от</label>
+                    <input type="date" class="filter-input" id="dateFromFilter">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Дата до</label>
+                    <input type="date" class="filter-input" id="dateToFilter">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Место проведения</label>
+                    <select class="filter-select" id="venueFilter">
+                        <option value="">Все площадки</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Возраст</label>
+                    <select class="filter-select" id="ageFilter">
+                        <option value="">Любой</option>
+                        <option value="0+">0+</option>
+                        <option value="12+">12+</option>
+                        <option value="16+">16+</option>
+                        <option value="18+">18+</option>
+                    </select>
+                </div>
+                <button class="filter-btn" id="applyFilters">Применить</button>
+                <button class="reset-filter-btn" id="resetFilters">Сбросить</button>
+            </div>
+            
+            <!-- Events List -->
+            <div class="items-container" id="eventsList"></div>
+        </div>
+
+        <!-- Step 2: Select Ticket -->
+        <div id="step2" class="booking-step" style="display: none;">
+            <div class="step-indicator">
+                <h1 class="step-indicator-title">Шаг 2</h1>
+                <p class="step-indicator-subtitle">Выберите билет</p>
+            </div>
+            
+            <!-- Categories -->
+            <div class="categories-container" id="categoriesContainer"></div>
+            
+            <!-- Seat Map -->
+            <div class="seat-map-container">
+                <h3 class="seat-map-title">Схема зала</h3>
+                <div class="stage">СЦЕНА</div>
+                <div class="seats-grid" id="seatsGrid"></div>
+                <div class="seat-legend">
+                    <div class="legend-item">
+                        <div class="legend-color available"></div>
+                        <span class="legend-text">Доступно</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color unavailable"></div>
+                        <span class="legend-text">Занято</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="back-btn" id="backToStep1">← Назад</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Confirm -->
+        <div id="step3" class="booking-step" style="display: none;">
+            <div class="step-indicator">
+                <h1 class="step-indicator-title">Шаг 3</h1>
+                <p class="step-indicator-subtitle">Проверьте информацию</p>
+            </div>
+            
+            <div class="ticket-info-container" id="confirmInfo"></div>
+            
+            <div class="nav-buttons">
+                <button class="start-btn" id="confirmBtn">Забронировать</button>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="back-btn" id="backToStep2">← Назад</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Success -->
+        <div id="step4" class="booking-step" style="display: none;">
+            <div class="success-container">
+                <div class="success-icon">✓</div>
+                <p class="success-text">Билет забронирован</p>
+                <button class="start-btn" id="returnToEvents">Вернуться к мероприятиям</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            if (!requireAuth()) return;
+            
+            // State
+            let selectedEvent = null;
+            let selectedCategory = null;
+            let selectedTicket = null;
+            let availableTickets = [];
+            
+            // Elements
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            const step4 = document.getElementById('step4');
+            const eventsList = document.getElementById('eventsList');
+            const categoriesContainer = document.getElementById('categoriesContainer');
+            const seatsGrid = document.getElementById('seatsGrid');
+            const confirmInfo = document.getElementById('confirmInfo');
+            
+            // Navigation
+            function showStep(stepNum) {
+                step1.style.display = stepNum === 1 ? 'block' : 'none';
+                step2.style.display = stepNum === 2 ? 'block' : 'none';
+                step3.style.display = stepNum === 3 ? 'block' : 'none';
+                step4.style.display = stepNum === 4 ? 'block' : 'none';
+            }
+            
+            // Function to escape HTML to prevent XSS
+            function escapeHtml(text) {
+                if (text === null || text === undefined) return '';
+                const div = document.createElement('div');
+                div.textContent = String(text);
+                return div.innerHTML;
+            }
+            
+            // Load filter options
+            async function loadFilterOptions() {
+                try {
+                    const [genresResult, citiesResult, venuesResult] = await Promise.all([
+                        eventsAPI.getGenres(),
+                        eventsAPI.getCities(),
+                        eventsAPI.getVenues()
+                    ]);
+                    
+                    const genreFilter = document.getElementById('genreFilter');
+                    const cityFilter = document.getElementById('cityFilter');
+                    const venueFilter = document.getElementById('venueFilter');
+                    
+                    if (genresResult.success) {
+                        genresResult.genres.forEach(genre => {
+                            const option = document.createElement('option');
+                            option.value = genre;
+                            option.textContent = genre;
+                            genreFilter.appendChild(option);
+                        });
+                    }
+                    
+                    if (citiesResult.success) {
+                        citiesResult.cities.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.textContent = city;
+                            cityFilter.appendChild(option);
+                        });
+                    }
+                    
+                    if (venuesResult.success) {
+                        venuesResult.venues.forEach(venue => {
+                            const option = document.createElement('option');
+                            option.value = venue.name;
+                            option.textContent = venue.name;
+                            venueFilter.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to load filter options:', error);
+                }
+            }
+            
+            // Load events
+            async function loadEvents(filters = {}) {
+                try {
+                    const result = await eventsAPI.getAll(filters);
+                    
+                    if (result.success) {
+                        displayEvents(result.events);
+                    } else {
+                        console.error('Failed to load events:', result.error);
+                    }
+                } catch (error) {
+                    console.error('Failed to load events:', error);
+                }
+            }
+            
+            // Display events
+            function displayEvents(events) {
+                eventsList.innerHTML = '';
+                
+                if (events.length === 0) {
+                    eventsList.innerHTML = '<p style="color: #808080; text-align: center; width: 100%;">Мероприятия не найдены</p>';
+                    return;
+                }
+                
+                events.forEach(event => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    
+                    // Проверка на малое количество билетов
+                    let lowTicketsWarning = '';
+                    if (event.lowTickets && event.availableTickets > 0) {
+                        lowTicketsWarning = `<p style="color: #800000; font-weight: bold; margin-top: 0.5rem;">Осталось ${escapeHtml(event.availableTickets)} билетов</p>`;
+                    }
+                    
+                    card.innerHTML = `
+                        <h3 class="item-title">${escapeHtml(event.title)}</h3>
+                        <p class="item-info"><span>Жанр:</span> ${escapeHtml(event.genre)}</p>
+                        <p class="item-info"><span>Место:</span> ${escapeHtml(event.venue.name)}, ${escapeHtml(event.venue.city)}</p>
+                        <p class="item-info"><span>Дата:</span> ${formatDate(event.eventDate)}</p>
+                        <p class="item-info"><span>Возраст:</span> ${escapeHtml(event.ageRestriction)}</p>
+                        ${lowTicketsWarning}
+                        <button class="item-btn" data-event-id="${escapeHtml(event.id)}">Выбрать мероприятие</button>
+                    `;
+                    
+                    card.querySelector('.item-btn').addEventListener('click', () => selectEvent(event));
+                    eventsList.appendChild(card);
+                });
+            }
+            
+            // Select event
+            async function selectEvent(event) {
+                selectedEvent = event;
+                selectedCategory = null;
+                selectedTicket = null;
+                
+                // Load categories
+                try {
+                    const result = await eventsAPI.getCategories(event.id);
+                    
+                    if (result.success) {
+                        displayCategories(result.categories);
+                        showStep(2);
+                    }
+                } catch (error) {
+                    console.error('Failed to load categories:', error);
+                }
+            }
+            
+            // Display categories
+            function displayCategories(categories) {
+                categoriesContainer.innerHTML = '';
+                
+                // Add "All categories" button first
+                const allBtn = document.createElement('button');
+                allBtn.className = 'category-btn';
+                allBtn.textContent = 'Все категории';
+                allBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    allBtn.classList.add('active');
+                    showAllCategories();
+                });
+                categoriesContainer.appendChild(allBtn);
+                
+                categories.forEach((category, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'category-btn' + (index === 0 ? ' active' : '');
+                    btn.textContent = `${category.categoryName} - ${category.price} ₽`;
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        selectCategory(category);
+                    });
+                    categoriesContainer.appendChild(btn);
+                });
+                
+                // Select first category by default
+                if (categories.length > 0) {
+                    selectCategory(categories[0]);
+                }
+            }
+            
+            // Show all categories (all available tickets)
+            async function showAllCategories() {
+                selectedCategory = null;
+                selectedTicket = null;
+                
+                try {
+                    const result = await eventsAPI.getAvailableTickets(selectedEvent.id);
+                    
+                    if (result.success) {
+                        availableTickets = result.tickets;
+                        displaySeats(result.tickets);
+                    }
+                } catch (error) {
+                    console.error('Failed to load all tickets:', error);
+                }
+            }
+            
+            // Select category
+            async function selectCategory(category) {
+                selectedCategory = category;
+                selectedTicket = null;
+                
+                try {
+                    const result = await eventsAPI.getAvailableTickets(selectedEvent.id, category.id);
+                    
+                    if (result.success) {
+                        availableTickets = result.tickets;
+                        displaySeats(result.tickets);
+                    }
+                } catch (error) {
+                    console.error('Failed to load tickets:', error);
+                }
+            }
+            
+            // Display seats
+            function displaySeats(tickets) {
+                seatsGrid.innerHTML = '';
+                
+                if (tickets.length === 0) {
+                    seatsGrid.innerHTML = '<p style="color: #808080; text-align: center;">Нет доступных билетов в этой категории</p>';
+                    return;
+                }
+                
+                // Group tickets by row
+                const rows = {};
+                tickets.forEach(ticket => {
+                    const rowNum = ticket.rowNumber || 0;
+                    if (!rows[rowNum]) rows[rowNum] = [];
+                    rows[rowNum].push(ticket);
+                });
+                
+                // Check if venue is standing layout (no row numbers)
+                const isStandingLayout = selectedEvent && selectedEvent.venue && selectedEvent.venue.layoutType === 'standing';
+                
+                // If no rows (standing area), display as vertically stacked category buttons or grid
+                if (Object.keys(rows).length === 1 && rows[0]) {
+                    // Group tickets by category name
+                    const categories = {};
+                    tickets.forEach(ticket => {
+                        const catName = ticket.categoryName || 'Без категории';
+                        if (!categories[catName]) categories[catName] = [];
+                        categories[catName].push(ticket);
+                    });
+                    
+                    // If viewing all categories and we have multiple, show as stacked buttons
+                    const categoryNames = Object.keys(categories);
+                    if (categoryNames.length > 1) {
+                        const container = document.createElement('div');
+                        container.style.display = 'flex';
+                        container.style.flexDirection = 'column';
+                        container.style.gap = '1rem';
+                        container.style.alignItems = 'center';
+                        
+                        categoryNames.forEach(catName => {
+                            const catTickets = categories[catName];
+                            // Filter only available tickets
+                            const availableTickets = catTickets.filter(t => t.isAvailable !== false);
+                            const catBtn = document.createElement('button');
+                            catBtn.className = 'category-btn';
+                            catBtn.style.width = '200px';
+                            catBtn.textContent = `${catName} (${availableTickets.length} мест)`;
+                            
+                            if (availableTickets.length === 0) {
+                                // No available tickets - gray out button
+                                catBtn.disabled = true;
+                                catBtn.style.backgroundColor = '#808080';
+                                catBtn.style.cursor = 'not-allowed';
+                            } else {
+                                catBtn.addEventListener('click', () => {
+                                    // Select first available ticket from this category
+                                    const ticket = availableTickets[0];
+                                    if (ticket) {
+                                        selectedTicket = ticket;
+                                        displayConfirmation();
+                                        showStep(3);
+                                    }
+                                });
+                            }
+                            container.appendChild(catBtn);
+                        });
+                        
+                        seatsGrid.appendChild(container);
+                    } else {
+                        // Single category - display as grid
+                        const row = document.createElement('div');
+                        row.className = 'seat-row';
+                        row.style.flexWrap = 'wrap';
+                        row.style.justifyContent = 'center';
+                        
+                        tickets.slice(0, 50).forEach(ticket => { // Limit to 50 for display
+                            const seat = document.createElement('button');
+                            seat.className = 'seat';
+                            seat.textContent = ticket.seatNumber;
+                            
+                            if (ticket.isAvailable === false) {
+                                seat.classList.add('unavailable');
+                                seat.disabled = true;
+                            } else {
+                                seat.addEventListener('click', () => selectSeat(ticket, seat));
+                            }
+                            
+                            row.appendChild(seat);
+                        });
+                        
+                        if (tickets.length > 50) {
+                            const more = document.createElement('p');
+                            more.style.color = '#808080';
+                            more.style.marginTop = '1rem';
+                            more.textContent = `+ ещё ${tickets.length - 50} мест`;
+                            seatsGrid.appendChild(row);
+                            seatsGrid.appendChild(more);
+                        } else {
+                            seatsGrid.appendChild(row);
+                        }
+                    }
+                } else {
+                    // Display rows with seats
+                    Object.keys(rows).sort((a, b) => parseInt(a) - parseInt(b)).forEach(rowNum => {
+                        const row = document.createElement('div');
+                        row.className = 'seat-row';
+                        
+                        const label = document.createElement('span');
+                        label.className = 'row-label';
+                        label.textContent = `Ряд ${rowNum}`;
+                        row.appendChild(label);
+                        
+                        rows[rowNum].sort((a, b) => a.seatNumber - b.seatNumber).forEach(ticket => {
+                            const seat = document.createElement('button');
+                            seat.className = 'seat';
+                            seat.textContent = ticket.seatNumber;
+                            
+                            // Check if seat is available
+                            if (ticket.isAvailable === false) {
+                                seat.classList.add('unavailable');
+                                seat.disabled = true;
+                            } else {
+                                seat.addEventListener('click', () => selectSeat(ticket, seat));
+                            }
+                            
+                            row.appendChild(seat);
+                        });
+                        
+                        seatsGrid.appendChild(row);
+                    });
+                }
+            }
+            
+            // Select seat
+            function selectSeat(ticket, seatElement) {
+                // Deselect previous
+                document.querySelectorAll('.seat.selected').forEach(s => s.classList.remove('selected'));
+                
+                // Select new
+                seatElement.classList.add('selected');
+                selectedTicket = ticket;
+                
+                // Show confirmation
+                displayConfirmation();
+                showStep(3);
+            }
+            
+            // Display confirmation
+            function displayConfirmation() {
+                const categoryName = selectedCategory ? selectedCategory.categoryName : (selectedTicket.categoryName || 'Неизвестно');
+                confirmInfo.innerHTML = `
+                    <div class="ticket-info-row">
+                        <span class="ticket-info-label">Мероприятие</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedEvent.title)}</span>
+                    </div>
+                    <div class="ticket-info-row">
+                        <span class="ticket-info-label">Жанр</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedEvent.genre)}</span>
+                    </div>
+                    <div class="ticket-info-row">
+                        <span class="ticket-info-label">Категория билета</span>
+                        <span class="ticket-info-value">${escapeHtml(categoryName)}</span>
+                    </div>
+                    ${selectedTicket.rowNumber ? `
+                    <div class="ticket-info-row">
+                        <span class="ticket-info-label">Ряд / Место</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedTicket.rowNumber)} / ${escapeHtml(selectedTicket.seatNumber)}</span>
+                    </div>
+                    ` : `
+                    <div class="ticket-info-row">
+                        <span class="ticket-info-label">Место</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedTicket.seatNumber)}</span>
+                    </div>
+                    `}
+                    <div class="ticket-info-row">
+                        <span class="ticket-info-label">Место проведения</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedEvent.venue.name)}, ${escapeHtml(selectedEvent.venue.city)}</span>
+                    </div>
+                    <div class="ticket-info-row">
+                        <span class="ticket-info-label">Дата</span>
+                        <span class="ticket-info-value">${formatDate(selectedEvent.eventDate)}</span>
+                    </div>
+                    <div class="ticket-info-row">
+                        <span class="ticket-info-label">Возрастное ограничение</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedEvent.ageRestriction)}</span>
+                    </div>
+                    <div class="ticket-info-row">
+                        <span class="ticket-info-label">Цена</span>
+                        <span class="ticket-info-value">${escapeHtml(selectedTicket.price)} ₽</span>
+                    </div>
+                `;
+            }
+            
+            // Format date
+            function formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            
+            // Event listeners
+            document.getElementById('applyFilters').addEventListener('click', () => {
+                const dateFrom = document.getElementById('dateFromFilter').value;
+                const dateTo = document.getElementById('dateToFilter').value;
+                
+                // Validate dates
+                if (dateFrom && dateTo) {
+                    const fromDate = new Date(dateFrom);
+                    const toDate = new Date(dateTo);
+                    if (fromDate > toDate) {
+                        alert('Дата "от" не может быть позже даты "до"');
+                        return;
+                    }
+                }
+                
+                const filters = {
+                    genre: document.getElementById('genreFilter').value,
+                    city: document.getElementById('cityFilter').value,
+                    dateFrom: dateFrom,
+                    dateTo: dateTo,
+                    venue: document.getElementById('venueFilter').value,
+                    ageRestriction: document.getElementById('ageFilter').value
+                };
+                loadEvents(filters);
+            });
+            
+            document.getElementById('resetFilters').addEventListener('click', () => {
+                document.getElementById('genreFilter').value = '';
+                document.getElementById('cityFilter').value = '';
+                document.getElementById('dateFromFilter').value = '';
+                document.getElementById('dateToFilter').value = '';
+                document.getElementById('venueFilter').value = '';
+                document.getElementById('ageFilter').value = '';
+                loadEvents();
+            });
+            
+            document.getElementById('backToStep1').addEventListener('click', () => {
+                showStep(1);
+            });
+            
+            document.getElementById('backToStep2').addEventListener('click', () => {
+                showStep(2);
+            });
+            
+            document.getElementById('confirmBtn').addEventListener('click', async () => {
+                try {
+                    const result = await bookingsAPI.book(selectedTicket.id, selectedEvent.id);
+                    
+                    if (result.success) {
+                        showStep(4);
+                    } else {
+                        alert(result.error || 'Ошибка бронирования');
+                    }
+                } catch (error) {
+                    console.error('Booking failed:', error);
+                    alert('Ошибка бронирования');
+                }
+            });
+            
+            document.getElementById('returnToEvents').addEventListener('click', () => {
+                selectedEvent = null;
+                selectedCategory = null;
+                selectedTicket = null;
+                showStep(1);
+                loadEvents();
+            });
+            
+            // Initialize
+            await loadFilterOptions();
+            await loadEvents();
+        });
+    </script>
+</body>
+</html>
