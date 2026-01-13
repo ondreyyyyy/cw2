@@ -273,7 +273,26 @@ string HttpServer::urlDecode(const string& encoded) {
 // Обслуживание статических файлов
 void HttpServer::serveStaticFile(const string& path, HttpResponse& response) {
     string filePath = staticFilesPath;
-    if (path == "/" || path.empty()) {
+    
+    // Маппинг дружественных URL на файлы
+    static const map<string, string> urlMappings = {
+        {"/", "/index.html"},
+        {"/login", "/pages/login.html"},
+        {"/register", "/pages/register.html"},
+        {"/forgot-password", "/pages/forgot-password.html"},
+        {"/change-password", "/pages/change-password.html"},
+        {"/events", "/pages/events.html"},
+        {"/tickets", "/pages/tickets.html"},
+        {"/booking-info", "/pages/booking-info.html"},
+        {"/admin", "/pages/admin.html"},
+        {"/ticket-detail", "/pages/ticket-detail.html"}
+    };
+    
+    // Проверяем маппинг дружественных URL
+    auto mappingIt = urlMappings.find(path);
+    if (mappingIt != urlMappings.end()) {
+        filePath += mappingIt->second;
+    } else if (path == "/" || path.empty()) {
         filePath += "/index.html";
     } else {
         filePath += path;

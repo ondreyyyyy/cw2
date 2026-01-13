@@ -100,7 +100,7 @@ json EmailService::sendVerificationCode(const string& email) {
         
         // Отправка email
         string subject = "Код подтверждения tickethub";
-        string body = "Здравствуйте!\n\nВаш код подтверждения для регистрации в системе tickethub: " + code + "\n\nКод действителен 10 минут.\n\nЕсли вы не запрашивали код подтверждения, проигнорируйте это письмо.\n\nС уважением,\nКоманда tickethub";
+        string body = "Здравствуйте!\n\nВаш код подтверждения для регистрации в системе tickethub: " + code + "\n\nКод действителен 10 минут.\n\nЕсли вы не запрашивали код подтверждения, проигнорируйте это письмо.\n\n- tickethub";
         
         bool emailSent = sendEmail(email, subject, body);
         
@@ -153,7 +153,7 @@ json EmailService::sendPasswordToEmail(const string& email, const string& passwo
     
     try {
         string subject = "Восстановление пароля tickethub";
-        string body = "Здравствуйте!\n\nВаш новый пароль для входа в систему tickethub: " + password + "\n\nРекомендуем сменить пароль после входа в личный кабинет.\n\nЕсли вы не запрашивали восстановление пароля, срочно обратитесь в службу поддержки.\n\nС уважением,\nКоманда tickethub";
+        string body = "Здравствуйте!\n\nВаш новый пароль для входа в систему tickethub: " + password + "\n\nРекомендуем сменить пароль после входа в личный кабинет.\n\nЕсли вы не запрашивали восстановление пароля, срочно обратитесь в службу поддержки.\n\n- tickethub";
         
         bool emailSent = sendEmail(email, subject, body);
         

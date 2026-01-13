@@ -55,12 +55,27 @@
             const loginInput = document.getElementById('login');
             const passwordInput = document.getElementById('password');
             
+            // Login validation - only Latin letters and Arabic numerals
+            function validateLogin(login) {
+                const loginRegex = /^[a-zA-Z0-9]+$/;
+                return loginRegex.test(login) && login.length > 0;
+            }
+            
+            // Filter login input to only allow valid characters
+            loginInput.addEventListener('input', () => {
+                const filteredValue = loginInput.value.replace(/[^a-zA-Z0-9]/g, '');
+                if (filteredValue !== loginInput.value) {
+                    loginInput.value = filteredValue;
+                }
+                updateSubmitButton();
+            });
+            
             // Validation function
             function validateForm() {
                 const login = loginInput.value.trim();
                 const password = passwordInput.value;
                 
-                return login.length > 0 && password.length > 0;
+                return validateLogin(login) && password.length > 0;
             }
             
             // Update submit button state
@@ -68,7 +83,6 @@
                 submitBtn.disabled = !validateForm();
             }
             
-            loginInput.addEventListener('input', updateSubmitButton);
             passwordInput.addEventListener('input', updateSubmitButton);
             
             form.addEventListener('submit', async (e) => {

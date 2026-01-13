@@ -125,6 +125,21 @@
             
             let codeRequested = false;
             
+            // Login validation - only Latin letters and Arabic numerals
+            function validateLogin(login) {
+                const loginRegex = /^[a-zA-Z0-9]+$/;
+                return loginRegex.test(login) && login.length > 0;
+            }
+            
+            // Filter login input to only allow valid characters
+            loginInput.addEventListener('input', () => {
+                const filteredValue = loginInput.value.replace(/[^a-zA-Z0-9]/g, '');
+                if (filteredValue !== loginInput.value) {
+                    loginInput.value = filteredValue;
+                }
+                updateSubmitButton();
+            });
+            
             // Email validation
             function validateEmail(email) {
                 // Check for special characters (only allow letters, numbers, dots, underscores, hyphens before @)
@@ -270,8 +285,9 @@
                 const emailValid = validateEmail(email);
                 const passwordsMatch = password === confirmPassword;
                 const fullNameValid = validateFullName(fullName);
+                const loginValid = validateLogin(login);
                 
-                return login.length > 0 && 
+                return loginValid && 
                        fullNameValid && 
                        emailValid && 
                        passwordValidation.isValid && 
