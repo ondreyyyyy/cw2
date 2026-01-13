@@ -225,6 +225,7 @@ json EventService::getAvailableTickets(int eventId, int categoryId) {
             ticket["rowNumber"] = row["row_number"].is_null() ? 0 : row["row_number"].as<int>();
             ticket["seatNumber"] = row["seat_number"].is_null() ? 0 : row["seat_number"].as<int>();
             ticket["price"] = row["price"].as<double>();
+            ticket["isAvailable"] = row["is_available"].as<bool>();
             tickets.push_back(ticket);
         }
         

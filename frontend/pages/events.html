@@ -108,10 +108,6 @@
                         <div class="legend-color unavailable"></div>
                         <span class="legend-text">Занято</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color selected"></div>
-                        <span class="legend-text">Выбрано</span>
-                    </div>
                 </div>
             </div>
             
@@ -407,19 +403,29 @@
                         
                         categoryNames.forEach(catName => {
                             const catTickets = categories[catName];
+                            // Filter only available tickets
+                            const availableTickets = catTickets.filter(t => t.isAvailable !== false);
                             const catBtn = document.createElement('button');
                             catBtn.className = 'category-btn';
                             catBtn.style.width = '200px';
-                            catBtn.textContent = `${catName} (${catTickets.length} мест)`;
-                            catBtn.addEventListener('click', () => {
-                                // Select first available ticket from this category
-                                const ticket = catTickets[0];
-                                if (ticket) {
-                                    selectedTicket = ticket;
-                                    displayConfirmation();
-                                    showStep(3);
-                                }
-                            });
+                            catBtn.textContent = `${catName} (${availableTickets.length} мест)`;
+                            
+                            if (availableTickets.length === 0) {
+                                // No available tickets - gray out button
+                                catBtn.disabled = true;
+                                catBtn.style.backgroundColor = '#808080';
+                                catBtn.style.cursor = 'not-allowed';
+                            } else {
+                                catBtn.addEventListener('click', () => {
+                                    // Select first available ticket from this category
+                                    const ticket = availableTickets[0];
+                                    if (ticket) {
+                                        selectedTicket = ticket;
+                                        displayConfirmation();
+                                        showStep(3);
+                                    }
+                                });
+                            }
                             container.appendChild(catBtn);
                         });
                         
@@ -435,7 +441,14 @@
                             const seat = document.createElement('button');
                             seat.className = 'seat';
                             seat.textContent = ticket.seatNumber;
-                            seat.addEventListener('click', () => selectSeat(ticket, seat));
+                            
+                            if (ticket.isAvailable === false) {
+                                seat.classList.add('unavailable');
+                                seat.disabled = true;
+                            } else {
+                                seat.addEventListener('click', () => selectSeat(ticket, seat));
+                            }
+                            
                             row.appendChild(seat);
                         });
                         
@@ -465,7 +478,15 @@
                             const seat = document.createElement('button');
                             seat.className = 'seat';
                             seat.textContent = ticket.seatNumber;
-                            seat.addEventListener('click', () => selectSeat(ticket, seat));
+                            
+                            // Check if seat is available
+                            if (ticket.isAvailable === false) {
+                                seat.classList.add('unavailable');
+                                seat.disabled = true;
+                            } else {
+                                seat.addEventListener('click', () => selectSeat(ticket, seat));
+                            }
+                            
                             row.appendChild(seat);
                         });
                         

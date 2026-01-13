@@ -156,18 +156,18 @@ INSERT INTO ticket_categories (event_id, category_name, price, total_seats, avai
 VALUES ($1, $2, $3, $4, $4, NULLIF($5, '0')::INTEGER, NULLIF($6, '0')::INTEGER) RETURNING id;
 
 -- @get_available_tickets_by_event
-SELECT at.id, at.event_id, at.category_id, at.row_number, at.seat_number, at.price,
+SELECT at.id, at.event_id, at.category_id, at.row_number, at.seat_number, at.price, at.is_available,
        tc.category_name
 FROM available_tickets at
 JOIN ticket_categories tc ON at.category_id = tc.id
-WHERE at.event_id = $1 AND at.is_available = TRUE;
+WHERE at.event_id = $1;
 
 -- @get_available_tickets_by_category
-SELECT at.id, at.event_id, at.category_id, at.row_number, at.seat_number, at.price,
+SELECT at.id, at.event_id, at.category_id, at.row_number, at.seat_number, at.price, at.is_available,
        tc.category_name
 FROM available_tickets at
 JOIN ticket_categories tc ON at.category_id = tc.id
-WHERE at.event_id = $1 AND at.category_id = $2 AND at.is_available = TRUE;
+WHERE at.event_id = $1 AND at.category_id = $2;
 
 -- @get_ticket_by_id
 SELECT at.id, at.event_id, at.category_id, at.row_number, at.seat_number, at.price, at.is_available,
