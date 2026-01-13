@@ -292,7 +292,7 @@ void HttpServer::serveStaticFile(const string& path, HttpResponse& response) {
     auto mappingIt = urlMappings.find(path);
     if (mappingIt != urlMappings.end()) {
         filePath += mappingIt->second;
-    } else if (path == "/" || path.empty()) {
+    } else if (path.empty()) {
         filePath += "/index.html";
     } else {
         filePath += path;
