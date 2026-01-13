@@ -4,7 +4,7 @@
 -- Пароль: adminpassword (хеш будет установлен при первом запуске сервера функцией initAdminPassword)
 -- ВАЖНО: Пароль администратора должен быть изменен на безопасный в production
 INSERT INTO users (login, email, full_name, password_hash, is_admin, is_verified) 
-VALUES ('admin', 'neverov.andrey11102006@gmail.com', 'Администратор', 'PLACEHOLDER_WILL_BE_SET_ON_STARTUP', TRUE, TRUE)
+VALUES ('admin', 'admin@tickethub.local', 'Администратор', 'PLACEHOLDER_WILL_BE_SET_ON_STARTUP', TRUE, TRUE)
 ON CONFLICT (login) DO NOTHING;
 
 -- Вставка площадок (3 Новосибирск, 1 Екатеринбург, 2 Москва, 2 Санкт-Петербург)
